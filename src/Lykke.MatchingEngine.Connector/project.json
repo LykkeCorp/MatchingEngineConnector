@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0-*",
+  "version": "0.1.0-beta-*",
   "packOptions": {
     "licenseUrl": "https://github.com/LykkeCity/MatchingEngineConnector/blob/master/LICENSE",
     "projectUrl": "https://github.com/LykkeCity/MatchingEngineConnector"
@@ -7,7 +7,7 @@
 
   "dependencies": {
     "Lykke.Common": "1.1.2",
-    "Lykke.MatchingEngine.Connector.Abstractions": "1.0.0-*",
+    "Lykke.MatchingEngine.Connector.Abstractions": "1.0.*",
     "Microsoft.AspNetCore.Http.Abstractions": "1.1.0",
     "protobuf-net": "2.1.0"
   },
