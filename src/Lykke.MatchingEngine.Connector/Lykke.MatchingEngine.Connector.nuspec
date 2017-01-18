@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>Lykke.MatchingEngine.Connector</id>
+    <title>Lykke Matching Engine Connector</title>
+    <version>$version$</version>
+    <authors>Lykke</authors>
+    <description>Connector for Lykke Matching Engine</description>
+  </metadata>
+</package>

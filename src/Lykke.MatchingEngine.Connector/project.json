@@ -1,0 +1,21 @@
+{
+  "version": "1.0.0-*",
+
+  "dependencies": {
+    "Lykke.Common": "1.1.2",
+    "Lykke.MatchingEngine.Connector.Abstractions": "1.0.0-*",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0",
+    "protobuf-net": "2.1.0"
+  },
+
+  "frameworks": {
+    "netcoreapp1.1": {
+      "dependencies": {
+        "Microsoft.NETCore.App": {
+          "type": "platform",
+          "version": "1.1.0"
+        }
+      }
+    }
+  }
+}
