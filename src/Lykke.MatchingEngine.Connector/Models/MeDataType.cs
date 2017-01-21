@@ -2,7 +2,15 @@
 {
     public enum MeDataType
     {
-        TheResponse, Ping, UpdateBalance, LimitOrder, MarketOrder, LimitOrderCancel, BalanceUpdate,
+        TheResponse,
+        Ping,
+        UpdateBalance,
+        LimitOrder,
+        MarketOrder,
+        LimitOrderCancel,
+        BalanceUpdate,
+        MultiLimitOrder,
+        Transfer,
         WalletCredentialsReload = 20
     }
 }

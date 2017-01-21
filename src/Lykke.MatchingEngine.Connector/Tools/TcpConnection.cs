@@ -130,10 +130,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 _socketStatistic.LastSendTime = DateTime.UtcNow;
                 await stream.FlushAsync();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 await Disconnect();
-                //_log.Add("SendDataToSocket Error. Id:"+Id+"; Msg:"+ex.Message);
+                _log.Add("SendDataToSocket Error. Id: "+Id+"; Msg: "+ex.Message);
             }
         }
 

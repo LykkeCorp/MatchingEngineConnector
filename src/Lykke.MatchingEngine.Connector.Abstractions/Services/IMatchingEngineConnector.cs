@@ -3,6 +3,9 @@ using Lykke.MatchingEngine.Connector.Abstractions.Models;
 
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
 {
+    /// <summary>
+    /// Connector for Matching Engine
+    /// </summary>
     public interface IMatchingEngineConnector
     {
         Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
@@ -11,6 +14,15 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task HandleLimitOrderAsync(string clientId, string assetPairId,
             OrderAction orderAction, double volume, double price);
 
+        /// <summary>
+        /// Transfer some amount of an asset, from one client to another
+        /// </summary>
+        /// <param name="fromClientId">Source client id</param>
+        /// <param name="toClientId">Target client id</param>
+        /// <param name="assetId">Asset id</param>
+        /// <param name="amount">Amount to be transfered</param>
+        /// <param name="businessId">internal id of transaction, to prevent double sending</param>
+        /// <returns></returns>
         Task TransferAsync(string fromClientId, string toClientId,
             string assetId, double amount, string businessId);
 

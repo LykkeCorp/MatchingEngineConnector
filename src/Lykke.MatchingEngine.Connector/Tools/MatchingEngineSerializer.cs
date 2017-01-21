@@ -20,6 +20,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             [MeDataType.MarketOrder] = typeof(MeMarketOrderModel),
             [MeDataType.LimitOrderCancel] = typeof(MeLimitOrderCancelModel),
             [MeDataType.BalanceUpdate] = typeof(MeUpdateBalanceModel),
+            [MeDataType.Transfer] = typeof(MeTransferModel),
             [MeDataType.WalletCredentialsReload] = typeof(MeUpdateWalletCredsModel),
 
         };
