@@ -4,10 +4,10 @@ using ProtoBuf;
 namespace Lykke.MatchingEngine.Connector.Models
 {
     [ProtoContract]
-    public class MeTransferModel
+    public class MeNewTransferModel
     {
         [ProtoMember(1, IsRequired = true)]
-        public long Id { get; set; }
+        public string Id { get; set; }
 
         [ProtoMember(2, IsRequired = true)]
         public string FromClientId { get; set; }
@@ -24,21 +24,17 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(6, IsRequired = true)]
         public double Amount { get; set; }
 
-        [ProtoMember(7, IsRequired = true)]
-        public string BusinessId { get; set; }
-
-        public static MeTransferModel Create(long id, string fromClientId,
-            string toClientId, string assetId, double amount, string businessId)
+        public static MeNewTransferModel Create(string id, string fromClientId,
+            string toClientId, string assetId, double amount)
         {
-            return new MeTransferModel
+            return new MeNewTransferModel
             {
                 Id = id,
                 FromClientId = fromClientId,
                 ToClientId = toClientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount,
-                BusinessId = businessId
+                Amount = amount
             };
         }
     }

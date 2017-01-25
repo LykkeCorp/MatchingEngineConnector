@@ -9,27 +9,38 @@ namespace Lykke.MatchingEngine.Connector.Services
     public class TcpOrderSocketService : ITcpClientService, ISocketNotifyer
     {
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
+        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
 
-        public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager)
+        public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
+            TasksManager<string, TheNewResponseModel> newTasksManager)
         {
             _tasksManager = tasksManager;
+            _newTasksManager = newTasksManager;
         }
 
-        public Task HandleDataFromSocket(object data)
+        public async Task HandleDataFromSocket(object data)
         {
-            var theResponse = data as TheResponseModel;
-
-            if (theResponse != null)
+            await Task.Run(() =>
             {
-                _tasksManager.Compliete(theResponse.ProcessId, theResponse);
-                Console.WriteLine("Response ProcessId: " + theResponse.ProcessId);
-            }
+                var theResponse = data as TheResponseModel;
+                if (theResponse != null)
+                {
+                    _tasksManager.Compliete(theResponse.ProcessId, theResponse);
+                    Console.WriteLine($"Response ProcessId: {theResponse.ProcessId}");
+                    return;
+                }
 
-
-            return Task.FromResult(0);
+                var theNewResponse = data as TheNewResponseModel;
+                if (theNewResponse != null)
+                {
+                    _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
+                    Console.WriteLine($"Response Id: {theNewResponse.Id}");
+                    return;
+                }
+            });
         }
 
-        public Func<object, Task> SendDataToSocket { get; set; }
+        public Func<object, Task<bool>> SendDataToSocket { get; set; }
         public string ContextName => "TcpSocket";
         public object GetPingData()
         {

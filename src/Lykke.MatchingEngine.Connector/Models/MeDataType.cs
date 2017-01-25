@@ -11,6 +11,9 @@
         BalanceUpdate,
         MultiLimitOrder,
         Transfer,
-        WalletCredentialsReload = 20
+        CashInOut,
+        Swap,
+        WalletCredentialsReload = 20,
+        TheNewResponse = 99
     }
 }

@@ -116,10 +116,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
         }
 
-        public async Task SendDataToSocket(object data)
+        public async Task<bool> SendDataToSocket(object data)
         {
             if (Disconnected)
-                return;
+                return false;
 
             try
             {
@@ -129,11 +129,13 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 _socketStatistic.Sent += dataToSocket.Length;
                 _socketStatistic.LastSendTime = DateTime.UtcNow;
                 await stream.FlushAsync();
+                return true;
             }
             catch (Exception ex)
             {
                 await Disconnect();
                 _log.Add("SendDataToSocket Error. Id: "+Id+"; Msg: "+ex.Message);
+                return false;
             }
         }
 

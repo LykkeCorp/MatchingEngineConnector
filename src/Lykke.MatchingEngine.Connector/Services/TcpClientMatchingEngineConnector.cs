@@ -10,7 +10,11 @@ namespace Lykke.MatchingEngine.Connector.Services
 {
     public class TcpClientMatchingEngineConnector : IMatchingEngineConnector
     {
-        private readonly TasksManager<long, TheResponseModel> _tasksManager = new TasksManager<long, TheResponseModel>();
+        private readonly TasksManager<long, TheResponseModel> _tasksManager =
+            new TasksManager<long, TheResponseModel>();
+
+        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager = 
+            new TasksManager<string, TheNewResponseModel>();
 
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
 
@@ -33,7 +37,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 3000,
                 () =>
                 {
-                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager);
+                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager);
                     return _tcpOrderSocketService;
                 });
         }
@@ -59,17 +63,6 @@ namespace Lykke.MatchingEngine.Connector.Services
             var limitOrderModel = MeLimitOrderModel.Create(id, clientId, assetId, orderAction, volume, price);
             var resultTask = _tasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(limitOrderModel);
-            await resultTask;
-        }
-
-        public async Task TransferAsync(string fromClientId, string toClientId,
-            string assetId, double amount, string businessId)
-        {
-            var id = GetNextRequestId();
-            var model = MeTransferModel.Create(id, fromClientId, toClientId, assetId, amount, businessId);
-            var resultTask = _tasksManager.Add(id);
-
-            await _tcpOrderSocketService.SendDataToSocket(model);
             await resultTask;
         }
 
@@ -118,6 +111,47 @@ namespace Lykke.MatchingEngine.Connector.Services
             var result = await resultTask;
 
             return result.ProcessId == id;
+        }
+
+        public async Task<bool> CashInOutAsync(string id, string clientId, string assetId, double amount)
+        {
+            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return false;
+
+            await resultTask;
+            return true;
+        }
+
+        public async Task<bool> TransferAsync(string id, string fromClientId,
+            string toClientId, string assetId, double amount)
+        {
+            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return false;
+
+            await resultTask;
+            return true;
+        }
+
+        public async Task<bool> SwapAsync(string id,
+            string clientId1, string assetId1, double amount1,
+            string clientId2, string assetId2, double amount2)
+        {
+            var model = MeNewSwapModel.Create(id,
+                clientId1, assetId1, amount1,
+                clientId2, assetId2, amount2);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return false;
+
+            await resultTask;
+            return true;
         }
 
         public void Start()

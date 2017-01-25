@@ -20,7 +20,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// Метод, с помощью которого мы отправляем данные в сокет
         /// </summary>
 
-        Func<object, Task> SendDataToSocket { get; set; }
+        Func<object, Task<bool>> SendDataToSocket { get; set; }
 
         /// <summary>
         /// Имя контекста сокета (для логирования)
