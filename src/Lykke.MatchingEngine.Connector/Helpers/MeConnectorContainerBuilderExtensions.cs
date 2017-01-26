@@ -18,7 +18,10 @@ namespace Autofac
                 );
 
             var tcpClient = new TcpClientMatchingEngineConnector(ipEndPoint, socketLog);
-            ioc.RegisterInstance<IMatchingEngineConnector>(tcpClient);
+            ioc.RegisterInstance(tcpClient)
+                .As<IMatchingEngineConnector>()
+                .As<TcpClientMatchingEngineConnector>();
+
             tcpClient.Start();
         }
     }
