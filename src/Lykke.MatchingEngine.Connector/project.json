@@ -7,14 +7,14 @@
 
   "dependencies": {
     "protobuf-net": "2.1.0",
-    "Microsoft.AspNetCore.Http.Abstractions": "1.1.0",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.1",
 
     "Lykke.Common": "1.1.2",
     "Lykke.MatchingEngine.Connector.Abstractions": "1.0.0-beta-*"
   },
 
   "frameworks": {
-    "netcoreapp1.1": {
+    "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
           "type": "platform",
