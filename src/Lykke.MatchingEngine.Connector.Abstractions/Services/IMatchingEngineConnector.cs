@@ -38,8 +38,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="clientId">Client id</param>
         /// <param name="assetId">Asset id</param>
         /// <param name="amount">Amount to be cashed in or out</param>
-        /// <returns>true if sucessfully send to ME</returns>
-        Task<bool> CashInOutAsync(string id, string clientId, string assetId, double amount);
+        /// <returns>Status code and message</returns>
+        Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount);
 
         /// <summary>
         /// Transfer some amount of an asset, from one client to another
@@ -49,8 +49,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="toClientId">Target client id</param>
         /// <param name="assetId">Asset id</param>
         /// <param name="amount">Amount to be transfered</param>
-        /// <returns>true if sucessfully send to ME</returns>
-        Task<bool> TransferAsync(string id, string fromClientId,
+        /// <returns>Status code and message</returns>
+        Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, double amount);
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="clientId2">Second client id</param>
         /// <param name="assetId2">Second asset id</param>
         /// <param name="amount2">Second amount id</param>
-        /// <returns></returns>
-        Task<bool> SwapAsync(string id,
+        /// <returns>Status code and message</returns>
+        Task<MeResponseModel> SwapAsync(string id,
             string clientId1, string assetId1, double amount1,
             string clientId2, string assetId2, double amount2);
     }

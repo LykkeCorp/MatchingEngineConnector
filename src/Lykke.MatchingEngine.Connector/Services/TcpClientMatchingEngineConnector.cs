@@ -113,32 +113,32 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.ProcessId == id;
         }
 
-        public async Task<bool> CashInOutAsync(string id, string clientId, string assetId, double amount)
+        public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount)
         {
             var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount);
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
-                return false;
+                return null;
 
-            await resultTask;
-            return true;
+            var result = await resultTask;
+            return result.ToDomainModel();
         }
 
-        public async Task<bool> TransferAsync(string id, string fromClientId,
+        public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, double amount)
         {
             var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount);
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
-                return false;
+                return null;
 
-            await resultTask;
-            return true;
+            var result = await resultTask;
+            return result.ToDomainModel();
         }
 
-        public async Task<bool> SwapAsync(string id,
+        public async Task<MeResponseModel> SwapAsync(string id,
             string clientId1, string assetId1, double amount1,
             string clientId2, string assetId2, double amount2)
         {
@@ -148,10 +148,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
-                return false;
+                return null;
 
-            await resultTask;
-            return true;
+            var result = await resultTask;
+            return result.ToDomainModel();
         }
 
         public void Start()
