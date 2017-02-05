@@ -19,6 +19,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
             var tcpClient = new TcpClientMatchingEngineConnector(ipEndPoint, socketLog);
             services.AddSingleton<IMatchingEngineConnector>(tcpClient);
+            services.AddSingleton<TcpClientMatchingEngineConnector>(tcpClient);
+
             tcpClient.Start();
         }
     }
