@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
@@ -46,16 +47,17 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             var id = GetNextRequestId();
             var model = MeUpdateBalanceModel.Create(id, clientId, assetId, value);
+            var resultTask = _tasksManager.Add(model.Id);
 
-            var resultTask = _tasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(model);
+
             await resultTask;
         }
 
         public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount)
         {
             var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount);
-            var resultTask = _newTasksManager.Add(id);
+            var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 return null;
@@ -68,7 +70,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             string toClientId, string assetId, double amount)
         {
             var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount);
-            var resultTask = _newTasksManager.Add(id);
+            var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 return null;
@@ -84,7 +86,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             var model = MeNewSwapModel.Create(id,
                 clientId1, assetId1, amount1,
                 clientId2, assetId2, amount2);
-            var resultTask = _newTasksManager.Add(id);
+            var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 return null;
@@ -94,12 +96,12 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         public async Task<MeResponseModel> PlaceLimitOrderAsync(string id,
-            string clientId, string assetPairId,
-            OrderAction orderAction, double volume, double price)
+            string clientId, string assetPairId, OrderAction orderAction,
+            double volume, double price, bool cancelPreviousOrders = false)
         {
-            var model = MeNewLimitOrderModel.Create(id,
-                clientId, assetPairId, orderAction, volume, price);
-            var resultTask = _newTasksManager.Add(id);
+            var model = MeNewLimitOrderModel.Create(id, clientId, assetPairId,
+                orderAction, volume, price, cancelPreviousOrders);
+            var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 return null;
@@ -108,16 +110,31 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.ToDomainModel();
         }
 
-        public async Task<MeResponseModel> CancelLimitOrderAsync(string id, string limitOrderId)
+        public async Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId)
         {
-            var model = MeNewLimitOrderCancelModel.Create(id, limitOrderId);
-            var resultTask = _newTasksManager.Add(id);
+            var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), limitOrderId);
+            var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 return null;
 
             var result = await resultTask;
             return result.ToDomainModel();
+        }
+
+        public async Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
+            OrderAction orderAction, double volume, bool straight)
+        {
+            var id = GetNextRequestId();
+
+            var model = MeMarketOrderModel.Create(id, clientId,
+                assetPairId, orderAction, volume, straight);
+            var resultTask = _tasksManager.Add(model.Id);
+
+            await _tcpOrderSocketService.SendDataToSocket(model);
+            var result = await resultTask;
+
+            return result.RecordId;
         }
 
         public void Start()

@@ -64,17 +64,29 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="orderAction">Type of Order action (buy/sell)</param>
         /// <param name="volume">Amount of base asset (to buy or sell)</param>
         /// <param name="price">Price for base asset in quoting asset</param>
+        /// <param name="cancelPreviousOrders">Cancels all previous limit orders of the client</param>
         /// <returns></returns>
         Task<MeResponseModel> PlaceLimitOrderAsync(string id,
-            string clientId, string assetPairId,
-            OrderAction orderAction, double volume, double price);
+            string clientId, string assetPairId, OrderAction orderAction,
+            double volume, double price, bool cancelPreviousOrders = false);
 
         /// <summary>
         /// Cancel previously placed Limit order
         /// </summary>
-        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
         /// <param name="limitOrderId">id of the limit order to be canceled</param>
         /// <returns></returns>
-        Task<MeResponseModel> CancelLimitOrderAsync(string id, string limitOrderId);
+        Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId);
+
+        /// <summary>
+        /// Handles market order, Matches with limit order if available
+        /// </summary>
+        /// <param name="clientId">id of the client</param>
+        /// <param name="assetPairId">id of the asset pair</param>
+        /// <param name="orderAction">Type of Order action (buy/sell)</param>
+        /// <param name="volume">Amount of base asset (to buy or sell)</param>
+        /// <param name="straight"></param>
+        /// <returns></returns>
+        Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
+            OrderAction orderAction, double volume, bool straight);
     }
 }

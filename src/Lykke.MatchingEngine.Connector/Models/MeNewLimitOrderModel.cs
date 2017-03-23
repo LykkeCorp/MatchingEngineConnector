@@ -29,8 +29,8 @@ namespace Lykke.MatchingEngine.Connector.Models
         public bool CancelAllPreviousLimitOrders { get; set; }
 
         public static MeNewLimitOrderModel Create(string id,
-            string clientId, string assetPairId,
-            OrderAction orderAction, double volume, double price)
+            string clientId, string assetPairId, OrderAction orderAction,
+            double volume, double price, bool cancelAllPreviousLimitOrders = false)
         {
             return new MeNewLimitOrderModel
             {
@@ -39,7 +39,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ClientId = clientId,
                 AssetPairId = assetPairId,
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
-                Price = price
+                Price = price,
+                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders
             };
         }
     }
