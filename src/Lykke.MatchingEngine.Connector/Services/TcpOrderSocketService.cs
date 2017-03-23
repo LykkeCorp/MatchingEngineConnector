@@ -35,7 +35,6 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
                     Console.WriteLine($"Response Id: {theNewResponse.Id}");
-                    return;
                 }
             });
         }
@@ -55,6 +54,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         public Task Disconnect()
         {
             _tasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
+            _newTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             return Task.FromResult(0);
         }
     }

@@ -24,6 +24,8 @@ namespace Lykke.MatchingEngine.Connector.Tools
             [MeDataType.CashInOut] = typeof(MeNewCashInOutModel),
             [MeDataType.Swap] = typeof(MeNewSwapModel),
             [MeDataType.WalletCredentialsReload] = typeof(MeUpdateWalletCredsModel),
+            [MeDataType.NewLimitOrder] = typeof(MeNewLimitOrderModel),
+            [MeDataType.NewLimitOrderCancel] = typeof(MeNewLimitOrderCancelModel),
             [MeDataType.TheNewResponse] = typeof(TheNewResponseModel)
 
         };

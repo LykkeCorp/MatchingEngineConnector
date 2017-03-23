@@ -5,32 +5,18 @@ using Lykke.MatchingEngine.Connector.Abstractions.Models;
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
 {
     /// <summary>
-    /// Connector for Matching Engine
+    /// Client for Matching Engine
     /// </summary>
-    [Obsolete("This interface is obsolete. Use IMatchingEngineClient instead.")]
-    public interface IMatchingEngineConnector
+    public interface IMatchingEngineClient
     {
-        Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
-            OrderAction orderAction, double volume, bool straight);
-
-        Task HandleLimitOrderAsync(string clientId, string assetPairId,
-            OrderAction orderAction, double volume, double price);
-
-        [Obsolete("This method is depricated and will be removed in future releases. Please use CashInOutAsync instead.")]
-        Task<CashInOutResponse> CashInOutBalanceAsync(string clientId, string assetId,
-            double balanceDelta, bool sendToBlockchain, string correlationId);
-
-        Task UpdateBalanceAsync(string clientId, string assetId, double value);
-
-        Task CancelLimitOrderAsync(int orderId);
-
         /// <summary>
-        /// Update Wallet Credentials cache in ME
+        /// Manually set asset balance for a client
         /// </summary>
-        /// <param name="clientId"></param>
-        /// <returns>True if update was successful</returns>
-        [Obsolete("This method will be removed in future releases.")]
-        Task<bool> UpdateWalletCredsForClient(string clientId);
+        /// <param name="clientId">Id of the client</param>
+        /// <param name="assetId">Id of the asset</param>
+        /// <param name="value">New balance value</param>
+        /// <returns></returns>
+        Task UpdateBalanceAsync(string clientId, string assetId, double value);
 
         /// <summary>
         /// Cash In or Out some amount of an asset
@@ -60,13 +46,35 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
         /// <param name="clientId1">First client id</param>
         /// <param name="assetId1">First asset id</param>
-        /// <param name="amount1">First amount id</param>
+        /// <param name="amount1">First amount</param>
         /// <param name="clientId2">Second client id</param>
         /// <param name="assetId2">Second asset id</param>
-        /// <param name="amount2">Second amount id</param>
+        /// <param name="amount2">Second amount</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> SwapAsync(string id,
             string clientId1, string assetId1, double amount1,
             string clientId2, string assetId2, double amount2);
+
+        /// <summary>
+        /// Place a limit order on the matching engine
+        /// </summary>
+        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
+        /// <param name="clientId">Id of the client</param>
+        /// <param name="assetPairId">Id of the Asset Pair</param>
+        /// <param name="orderAction">Type of Order action (buy/sell)</param>
+        /// <param name="volume">Amount of base asset (to buy or sell)</param>
+        /// <param name="price">Price for base asset in quoting asset</param>
+        /// <returns></returns>
+        Task<MeResponseModel> PlaceLimitOrderAsync(string id,
+            string clientId, string assetPairId,
+            OrderAction orderAction, double volume, double price);
+
+        /// <summary>
+        /// Cancel previously placed Limit order
+        /// </summary>
+        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
+        /// <param name="limitOrderId">id of the limit order to be canceled</param>
+        /// <returns></returns>
+        Task<MeResponseModel> CancelLimitOrderAsync(string id, string limitOrderId);
     }
 }

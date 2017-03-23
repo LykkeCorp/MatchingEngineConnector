@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
@@ -9,8 +8,7 @@ using Lykke.MatchingEngine.Connector.Tools;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
-    [Obsolete("This interface is obsolete. Use TcpMatchingEngineClient instead.")]
-    public class TcpClientMatchingEngineConnector : IMatchingEngineConnector
+    public class TcpMatchingEngineClient : IMatchingEngineClient
     {
         private readonly TasksManager<long, TheResponseModel> _tasksManager =
             new TasksManager<long, TheResponseModel>();
@@ -31,7 +29,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 return _currentNumber++;
         }
 
-        public TcpClientMatchingEngineConnector(IPEndPoint ipEndPoint, ISocketLog socketLog = null)
+        public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ISocketLog socketLog = null)
         {
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 socketLog,
@@ -43,47 +41,6 @@ namespace Lykke.MatchingEngine.Connector.Services
                     return _tcpOrderSocketService;
                 });
         }
-        
-        public async Task<string> HandleMarketOrderAsync(string clientId, string assetId,
-            OrderAction orderAction, double volume, bool straight)
-        {
-            var id = GetNextRequestId();
-
-            var marketOrderModel = MeMarketOrderModel.Create(id, clientId, assetId, orderAction, volume, straight);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
-            var result = await resultTask;
-
-            return result.RecordId;
-        }
-
-        public async Task HandleLimitOrderAsync(string clientId, string assetId,
-            OrderAction orderAction, double volume, double price)
-        {
-            var id = GetNextRequestId();
-
-            var limitOrderModel = MeLimitOrderModel.Create(id, clientId, assetId, orderAction, volume, price);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(limitOrderModel);
-            await resultTask;
-        }
-
-        public async Task<CashInOutResponse> CashInOutBalanceAsync(string clientId, string assetId,
-            double balanceDelta, bool sendToBitcoin, string corelationId)
-        {
-            var id = GetNextRequestId();
-
-            var updateBalanceModel = MeCashInOutModel.Create(id, clientId, assetId, balanceDelta, sendToBitcoin, corelationId);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(updateBalanceModel);
-            var result = await resultTask;
-
-            return new CashInOutResponse
-            {
-                RecordId = result.RecordId,
-                CorrelationId = result.CorrelationId
-            };
-        }
 
         public async Task UpdateBalanceAsync(string clientId, string assetId, double value)
         {
@@ -93,26 +50,6 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _tasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(model);
             await resultTask;
-        }
-
-        public async Task CancelLimitOrderAsync(int orderId)
-        {
-            var id = GetNextRequestId();
-            var cancelOrderModel = MeLimitOrderCancelModel.Create(id, orderId);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(cancelOrderModel);
-            await resultTask;
-        }
-
-        public async Task<bool> UpdateWalletCredsForClient(string clientId)
-        {
-            var id = GetNextRequestId();
-            var updateWalletCredsModel = MeUpdateWalletCredsModel.Create(id, clientId);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(updateWalletCredsModel);
-            var result = await resultTask;
-
-            return result.ProcessId == id;
         }
 
         public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount)
@@ -147,6 +84,33 @@ namespace Lykke.MatchingEngine.Connector.Services
             var model = MeNewSwapModel.Create(id,
                 clientId1, assetId1, amount1,
                 clientId2, assetId2, amount2);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return null;
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
+        public async Task<MeResponseModel> PlaceLimitOrderAsync(string id,
+            string clientId, string assetPairId,
+            OrderAction orderAction, double volume, double price)
+        {
+            var model = MeNewLimitOrderModel.Create(id,
+                clientId, assetPairId, orderAction, volume, price);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return null;
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
+        public async Task<MeResponseModel> CancelLimitOrderAsync(string id, string limitOrderId)
+        {
+            var model = MeNewLimitOrderCancelModel.Create(id, limitOrderId);
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
