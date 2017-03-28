@@ -10,6 +10,11 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
     public interface IMatchingEngineClient
     {
         /// <summary>
+        /// Property specifying if ME Client is Connected to ME
+        /// </summary>
+        bool IsConnected { get; }
+
+        /// <summary>
         /// Manually set asset balance for a client
         /// </summary>
         /// <param name="clientId">Id of the client</param>
