@@ -25,7 +25,10 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(6, IsRequired = true)]
         public bool Straight { get; set; }
 
-        public static MeMarketOrderModel Create(long id, string clientId, string assetId, OrderAction orderAction, double volume, bool straight)
+        [ProtoMember(7, IsRequired = false)]
+        public double? ReservedLimitVolume { get; set; }
+
+        public static MeMarketOrderModel Create(long id, string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume)
         {
             return new MeMarketOrderModel
             {
@@ -34,7 +37,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ClientId = clientId,
                 AssetId = assetId,
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
-                Straight = straight
+                Straight = straight,
+                ReservedLimitVolume = reservedLimitVolume
             };
         }
     }

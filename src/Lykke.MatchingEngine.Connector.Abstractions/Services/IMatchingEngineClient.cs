@@ -90,8 +90,9 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="orderAction">Type of Order action (buy/sell)</param>
         /// <param name="volume">Amount of base asset (to buy or sell)</param>
         /// <param name="straight"></param>
+        /// <param name="reservedLimitVolume"></param>
         /// <returns></returns>
         Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
-            OrderAction orderAction, double volume, bool straight);
+            OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
     }
 }
