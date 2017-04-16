@@ -56,6 +56,16 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.RecordId;
         }
 
+        public async Task<string> HandleMarketOrderAsync(string id, string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null)
+        {
+            var marketOrderModel = MeNewMarketOrderModel.Create(id, clientId, assetPairId, orderAction, volume, straight, reservedLimitVolume);
+            var resultTask = _newTasksManager.Add(id);
+            await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
+            var result = await resultTask;
+
+            return result.MatchingEngineId;
+        }
+
         public async Task HandleLimitOrderAsync(string clientId, string assetId,
             OrderAction orderAction, double volume, double price)
         {

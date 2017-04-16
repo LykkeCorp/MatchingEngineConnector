@@ -15,6 +15,7 @@
         Swap,
         WalletCredentialsReload = 20,
         NewLimitOrder = 50,
+        NewMarketOrder = 52,
         NewLimitOrderCancel = 55,
         TheNewResponse = 99
     }

@@ -13,6 +13,9 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
             OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
 
+        Task<string> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
+            OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
+
         Task HandleLimitOrderAsync(string clientId, string assetPairId,
             OrderAction orderAction, double volume, double price);
 
