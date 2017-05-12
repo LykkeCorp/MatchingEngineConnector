@@ -10,10 +10,13 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
     [Obsolete("This interface is obsolete. Use IMatchingEngineClient instead.")]
     public interface IMatchingEngineConnector
     {
-        Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
+        Task<string> HandleMarketOrderObsoleteAsync(string clientId, string assetPairId,
             OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
 
-        Task<string> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
+        Task<string> HandleMarketOrderObsoleteAsync(string id, string clientId, string assetPairId,
+            OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
+
+        Task<MarketOrderResponse> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
             OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
 
         Task HandleLimitOrderAsync(string clientId, string assetPairId,

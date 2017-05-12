@@ -6,7 +6,7 @@
         Ping,
         UpdateBalance,
         LimitOrder,
-        MarketOrder,
+        MarketOrderObsolete,
         LimitOrderCancel,
         BalanceUpdate,
         MultiLimitOrder,
@@ -17,6 +17,8 @@
         NewLimitOrder = 50,
         NewMarketOrder = 52,
         NewLimitOrderCancel = 55,
-        TheNewResponse = 99
+        TheNewResponse = 99,
+        MarketOrder = 53,
+        MarketOrderResponse = 100
     }
 }

@@ -10,12 +10,15 @@ namespace Lykke.MatchingEngine.Connector.Services
     {
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
+        private readonly TasksManager<string, MarketOrderResponseModel> _marketOrdersTasksManager;
 
         public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
-            TasksManager<string, TheNewResponseModel> newTasksManager)
+            TasksManager<string, TheNewResponseModel> newTasksManager,
+            TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
+            _marketOrdersTasksManager = marketOrdersTasksManager;
         }
 
         public async Task HandleDataFromSocket(object data)
@@ -36,6 +39,13 @@ namespace Lykke.MatchingEngine.Connector.Services
                     _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
                     Console.WriteLine($"Response Id: {theNewResponse.Id}");
                 }
+
+                var theMarketOrderResponse = data as MarketOrderResponseModel;
+                if (theMarketOrderResponse != null)
+                {
+                    _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
+                    Console.WriteLine($"Response Id: {theMarketOrderResponse.Id}");
+                }
             });
         }
 
@@ -55,6 +65,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             _tasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             _newTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
+            _marketOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             return Task.FromResult(0);
         }
     }

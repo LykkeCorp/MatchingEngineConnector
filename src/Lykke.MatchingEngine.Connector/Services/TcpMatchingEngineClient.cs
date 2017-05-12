@@ -17,6 +17,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager = 
             new TasksManager<string, TheNewResponseModel>();
 
+        private readonly TasksManager<string, MarketOrderResponseModel> _marketOrderTasksManager =
+            new TasksManager<string, MarketOrderResponseModel>();
+
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
 
         private readonly object _lockObject = new object();
@@ -38,7 +41,8 @@ namespace Lykke.MatchingEngine.Connector.Services
                 3000,
                 () =>
                 {
-                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager);
+                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager,
+                        _marketOrderTasksManager);
                     return _tcpOrderSocketService;
                 });
         }
@@ -127,7 +131,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             var id = GetNextRequestId();
 
-            var model = MeMarketOrderModel.Create(id, clientId,
+            var model = MeMarketOrderObsoleteModel.Create(id, clientId,
                 assetPairId, orderAction, volume, straight, reservedLimitVolume);
             var resultTask = _tasksManager.Add(model.Id);
 

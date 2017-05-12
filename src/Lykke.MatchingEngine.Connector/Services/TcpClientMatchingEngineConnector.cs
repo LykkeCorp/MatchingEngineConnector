@@ -15,6 +15,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<long, TheResponseModel> _tasksManager =
             new TasksManager<long, TheResponseModel>();
 
+        private readonly TasksManager<string, MarketOrderResponseModel> _marketOrderTasksManager =
+            new TasksManager<string, MarketOrderResponseModel>();
+
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager = 
             new TasksManager<string, TheNewResponseModel>();
 
@@ -39,16 +42,17 @@ namespace Lykke.MatchingEngine.Connector.Services
                 3000,
                 () =>
                 {
-                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager);
+                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager,
+                        _marketOrderTasksManager);
                     return _tcpOrderSocketService;
                 });
         }
         
-        public async Task<string> HandleMarketOrderAsync(string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null)
+        public async Task<string> HandleMarketOrderObsoleteAsync(string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null)
         {
             var id = GetNextRequestId();
 
-            var marketOrderModel = MeMarketOrderModel.Create(id, clientId, assetId, orderAction, volume, straight, reservedLimitVolume);
+            var marketOrderModel = MeMarketOrderObsoleteModel.Create(id, clientId, assetId, orderAction, volume, straight, reservedLimitVolume);
             var resultTask = _tasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
             var result = await resultTask;
@@ -56,7 +60,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.RecordId;
         }
 
-        public async Task<string> HandleMarketOrderAsync(string id, string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null)
+        public async Task<string> HandleMarketOrderObsoleteAsync(string id, string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null)
         {
             var marketOrderModel = MeNewMarketOrderModel.Create(id, clientId, assetPairId, orderAction, volume, straight, reservedLimitVolume);
             var resultTask = _newTasksManager.Add(id);
@@ -64,6 +68,21 @@ namespace Lykke.MatchingEngine.Connector.Services
             var result = await resultTask;
 
             return result.MatchingEngineId;
+        }
+
+        public async Task<MarketOrderResponse> HandleMarketOrderAsync(string id, string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight,
+            double? reservedLimitVolume = null)
+        {
+            var marketOrderModel = MeMarketOrderModel.Create(id, clientId, assetPairId, orderAction, volume, straight, reservedLimitVolume);
+            var resultTask = _marketOrderTasksManager.Add(id);
+            await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
+            var result = await resultTask;
+
+            return new MarketOrderResponse
+            {
+                Price = result.Price,
+                Status = result.Status
+            };
         }
 
         public async Task HandleLimitOrderAsync(string clientId, string assetId,

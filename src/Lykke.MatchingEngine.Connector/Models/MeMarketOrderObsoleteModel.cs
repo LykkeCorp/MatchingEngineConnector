@@ -5,10 +5,10 @@ using ProtoBuf;
 namespace Lykke.MatchingEngine.Connector.Models
 {
     [ProtoContract]
-    public class MeMarketOrderModel
+    public class MeMarketOrderObsoleteModel
     {
         [ProtoMember(1, IsRequired = true)]
-        public string Id { get; set; }
+        public long Id { get; set; }
 
         [ProtoMember(2, IsRequired = true)]
         public long DateTime { get; set; }
@@ -28,9 +28,9 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(7, IsRequired = false)]
         public double? ReservedLimitVolume { get; set; }
 
-        public static MeMarketOrderModel Create(string id, string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume)
+        public static MeMarketOrderObsoleteModel Create(long id, string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume)
         {
-            return new MeMarketOrderModel
+            return new MeMarketOrderObsoleteModel
             {
                 Id = id,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
