@@ -17,11 +17,12 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <summary>
         /// Manually set asset balance for a client
         /// </summary>
+        /// /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
         /// <param name="clientId">Id of the client</param>
         /// <param name="assetId">Id of the asset</param>
         /// <param name="value">New balance value</param>
         /// <returns></returns>
-        Task UpdateBalanceAsync(string clientId, string assetId, double value);
+        Task UpdateBalanceAsync(string id, string clientId, string assetId, double value);
 
         /// <summary>
         /// Cash In or Out some amount of an asset

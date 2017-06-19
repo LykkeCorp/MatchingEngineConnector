@@ -19,6 +19,7 @@
         NewLimitOrderCancel = 55,
         TheNewResponse = 99,
         MarketOrder = 53,
-        MarketOrderResponse = 100
+        MarketOrderResponse = 100,
+        UpdateBalanceNew = 11
     }
 }
