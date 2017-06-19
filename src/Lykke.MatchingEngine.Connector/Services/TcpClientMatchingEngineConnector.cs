@@ -113,12 +113,11 @@ namespace Lykke.MatchingEngine.Connector.Services
             };
         }
 
-        public async Task UpdateBalanceAsync(string clientId, string assetId, double value)
+        public async Task UpdateBalanceAsync(string id, string clientId, string assetId, double value)
         {
-            var id = GetNextRequestId();
-            var model = MeUpdateBalanceModel.Create(id, clientId, assetId, value);
+            var model = MeNewUpdateBalanceModel.Create(id, clientId, assetId, value);
 
-            var resultTask = _tasksManager.Add(id);
+            var resultTask = _newTasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(model);
             await resultTask;
         }

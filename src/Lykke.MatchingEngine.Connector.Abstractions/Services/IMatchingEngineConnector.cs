@@ -26,7 +26,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<CashInOutResponse> CashInOutBalanceAsync(string clientId, string assetId,
             double balanceDelta, bool sendToBlockchain, string correlationId);
 
-        Task UpdateBalanceAsync(string clientId, string assetId, double value);
+        Task UpdateBalanceAsync(string id, string clientId, string assetId, double value);
 
         Task CancelLimitOrderAsync(int orderId);
 
