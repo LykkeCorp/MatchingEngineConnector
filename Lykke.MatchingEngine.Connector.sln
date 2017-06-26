@@ -9,12 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F1414367-B0EF-4357-8B0F-3AE6543FF1BD}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "patch", "patch", "{C3DC1134-7EFA-48A2-B049-5928BA6651CA}"
-	ProjectSection(SolutionItems) = preProject
-		patch\package.json = patch\package.json
-		patch\patch-project-json.js = patch\patch-project-json.js
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.MatchingEngine.Connector", "src\Lykke.MatchingEngine.Connector\Lykke.MatchingEngine.Connector.csproj", "{67470445-59C6-45E8-8442-D80CE951554D}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Lykke.MatchingEngine.Connector.Abstractions", "src\Lykke.MatchingEngine.Connector.Abstractions\Lykke.MatchingEngine.Connector.Abstractions.csproj", "{A7440552-BAC3-4937-8205-6E59ECACFDE5}"
@@ -38,7 +32,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{C3DC1134-7EFA-48A2-B049-5928BA6651CA} = {4730577D-647B-4F36-BAAB-1B26F0927AC0}
 		{67470445-59C6-45E8-8442-D80CE951554D} = {BBA7D3B2-3524-400E-8970-99CF33D7B758}
 		{A7440552-BAC3-4937-8205-6E59ECACFDE5} = {BBA7D3B2-3524-400E-8970-99CF33D7B758}
 	EndGlobalSection
