@@ -8,7 +8,7 @@
     <Company>Lykke</Company>
     <Description></Description>
     <Copyright>@2017 - Lykke</Copyright>
-    <PackageLicenseUrl>https://github.com/LykkeCity/MatchingEngineConnector</PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/LykkeCity/MatchingEngineConnector/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/LykkeCity/MatchingEngineConnector</PackageProjectUrl>
     <RepositoryUrl>https://github.com/LykkeCity/MatchingEngineConnector.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
@@ -19,3 +19,4 @@
   </PropertyGroup>
 
 </Project>
+    
