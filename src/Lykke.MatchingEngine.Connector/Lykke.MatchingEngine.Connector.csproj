@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <VersionPrefix>1.0.0-beta</VersionPrefix>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+    <AssemblyName>Lykke.MatchingEngine.Connector</AssemblyName>
+    <PackageId>Lykke.MatchingEngine.Connector</PackageId>
+    <PackageProjectUrl>https://github.com/LykkeCity/MatchingEngineConnector</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/LykkeCity/MatchingEngineConnector/blob/master/LICENSE</PackageLicenseUrl>
+    <RuntimeFrameworkVersion>1.1.1</RuntimeFrameworkVersion>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lykke.MatchingEngine.Connector.Abstractions\Lykke.MatchingEngine.Connector.Abstractions.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.3.0" />
+    <PackageReference Include="protobuf-net" Version="2.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.0.2" />
+    <PackageReference Include="Lykke.Common" Version="1.1.2" />
+  </ItemGroup>
+
+</Project>
