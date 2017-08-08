@@ -19,16 +19,17 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<MarketOrderResponse> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
             OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
 
-        Task HandleLimitOrderAsync(string clientId, string assetPairId,
-            OrderAction orderAction, double volume, double price);
+        Task<MeResponseModel> HandleLimitOrderAsync(string id,
+            string clientId, string assetPairId, OrderAction orderAction,
+            double volume, double price, bool cancelPreviousOrders = false);
+
+        Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId);
 
         [Obsolete("This method is depricated and will be removed in future releases. Please use CashInOutAsync instead.")]
         Task<CashInOutResponse> CashInOutBalanceAsync(string clientId, string assetId,
             double balanceDelta, bool sendToBlockchain, string correlationId);
 
         Task UpdateBalanceAsync(string id, string clientId, string assetId, double value);
-
-        Task CancelLimitOrderAsync(int orderId);
 
         /// <summary>
         /// Update Wallet Credentials cache in ME

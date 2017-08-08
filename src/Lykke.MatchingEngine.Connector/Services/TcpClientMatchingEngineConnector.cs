@@ -85,15 +85,31 @@ namespace Lykke.MatchingEngine.Connector.Services
             };
         }
 
-        public async Task HandleLimitOrderAsync(string clientId, string assetId,
-            OrderAction orderAction, double volume, double price)
+        public async Task<MeResponseModel> HandleLimitOrderAsync(string id,
+            string clientId, string assetPairId, OrderAction orderAction,
+            double volume, double price, bool cancelPreviousOrders = false)
         {
-            var id = GetNextRequestId();
+            var model = MeNewLimitOrderModel.Create(id, clientId, assetPairId,
+                orderAction, volume, price, cancelPreviousOrders);
+            var resultTask = _newTasksManager.Add(model.Id);
 
-            var limitOrderModel = MeLimitOrderModel.Create(id, clientId, assetId, orderAction, volume, price);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(limitOrderModel);
-            await resultTask;
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return null;
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
+        public async Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId)
+        {
+            var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), limitOrderId);
+            var resultTask = _newTasksManager.Add(model.Id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return null;
+
+            var result = await resultTask;
+            return result.ToDomainModel();
         }
 
         public async Task<CashInOutResponse> CashInOutBalanceAsync(string clientId, string assetId,
@@ -119,15 +135,6 @@ namespace Lykke.MatchingEngine.Connector.Services
 
             var resultTask = _newTasksManager.Add(id);
             await _tcpOrderSocketService.SendDataToSocket(model);
-            await resultTask;
-        }
-
-        public async Task CancelLimitOrderAsync(int orderId)
-        {
-            var id = GetNextRequestId();
-            var cancelOrderModel = MeLimitOrderCancelModel.Create(id, orderId);
-            var resultTask = _tasksManager.Add(id);
-            await _tcpOrderSocketService.SendDataToSocket(cancelOrderModel);
             await resultTask;
         }
 
