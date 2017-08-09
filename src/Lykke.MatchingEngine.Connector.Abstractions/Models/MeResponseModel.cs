@@ -7,9 +7,15 @@
         //validation errors
         LowBalance = 401,
         AlreadyProcessed = 402,
+        UnknownAsset = 410,
+        NoLiquidity = 411,
+        NotEnoughFunds = 412,
+        Dust = 413,
+        ReservedVolumeHigherThanBalance = 414,
+        NotFound = 415,
 
-        //ME errors
-        Runtime = 501
+        //ME errors        
+        Runtime = 500
     }
 
     public class MeResponseModel

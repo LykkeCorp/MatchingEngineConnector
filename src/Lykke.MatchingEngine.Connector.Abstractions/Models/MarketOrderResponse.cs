@@ -2,7 +2,7 @@
 {
     public class MarketOrderResponse
     {
-        public int Status { get; set; }
+        public MeStatusCodes Status { get; set; }
         public double Price { get; set; }
     }
 }

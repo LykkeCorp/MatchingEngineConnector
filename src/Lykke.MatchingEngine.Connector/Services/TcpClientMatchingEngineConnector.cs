@@ -81,7 +81,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             return new MarketOrderResponse
             {
                 Price = result.Price,
-                Status = result.Status
+                Status = (MeStatusCodes) result.Status
             };
         }
 
