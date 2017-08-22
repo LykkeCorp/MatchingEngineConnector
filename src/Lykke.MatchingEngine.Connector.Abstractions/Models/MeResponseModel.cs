@@ -13,7 +13,8 @@
         Dust = 413,
         ReservedVolumeHigherThanBalance = 414,
         NotFound = 415,
-
+        BalanceLowerThanReserved = 416,
+        LeadToNegativeSpread = 417,
         //ME errors        
         Runtime = 500
     }
