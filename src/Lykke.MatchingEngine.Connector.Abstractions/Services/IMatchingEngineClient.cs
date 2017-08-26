@@ -108,7 +108,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="straight"></param>
         /// <param name="reservedLimitVolume"></param>
         /// <returns></returns>
-        Task<string> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
+        Task<MarketOrderResponse> HandleMarketOrderAsync(string id, string clientId, string assetPairId,
             OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
     }
 }
