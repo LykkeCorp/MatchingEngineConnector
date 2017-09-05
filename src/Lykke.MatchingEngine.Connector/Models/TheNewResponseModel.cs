@@ -26,7 +26,8 @@ namespace Lykke.MatchingEngine.Connector.Models
             return new MeResponseModel
             {
                 Status = (MeStatusCodes) response.Status,
-                Message = response.StatusReason
+                Message = response.StatusReason,
+                TransactionId = response.Id
             };
         }
     }
