@@ -164,7 +164,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, double amount)
         {
-            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount);
+            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount, null, 0);
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))

@@ -44,7 +44,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="amount">Amount to be transfered</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> TransferAsync(string id, string fromClientId,
-            string toClientId, string assetId, double amount);
+            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage);
 
         /// <summary>
         /// Swap some assets between clients
