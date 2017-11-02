@@ -29,11 +29,4 @@ namespace Lykke.MatchingEngine.Connector.Models
             };
         }
     }
-
-    public enum MeLimitOrderFeeType
-    {
-        NO_FEE = 0,
-        CLIENT_FEE = 1,
-        EXTERNAL_FEE = 2
-    }
 }

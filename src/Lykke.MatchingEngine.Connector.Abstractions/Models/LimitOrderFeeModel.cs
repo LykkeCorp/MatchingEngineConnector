@@ -8,4 +8,11 @@
         public string SourceClientId { get; set; }
         public string TargetClientId { get; set; }
     }
+
+    public enum LimitOrderFeeType
+    {
+        NO_FEE = 0,
+        CLIENT_FEE = 1,
+        EXTERNAL_FEE = 2
+    }
 }
