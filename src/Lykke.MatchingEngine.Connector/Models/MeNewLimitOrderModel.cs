@@ -28,19 +28,23 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(7, IsRequired = false)]
         public bool CancelAllPreviousLimitOrders { get; set; }
 
+        [ProtoMember(8, IsRequired = false)]
+        public MeLimitOrderFeeModel Fee { get; set; }
+
         public static MeNewLimitOrderModel Create(string id,
             string clientId, string assetPairId, OrderAction orderAction,
-            double volume, double price, bool cancelAllPreviousLimitOrders = false)
+            double volume, double price, bool cancelAllPreviousLimitOrders, MeLimitOrderFeeModel fee)
         {
             return new MeNewLimitOrderModel
             {
                 Id = id,
-                TimeStamp = (long)System.DateTime.UtcNow.ToUnixTime(),
+                TimeStamp = (long) System.DateTime.UtcNow.ToUnixTime(),
                 ClientId = clientId,
                 AssetPairId = assetPairId,
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
                 Price = price,
-                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders
+                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders,
+                Fee = fee
             };
         }
     }

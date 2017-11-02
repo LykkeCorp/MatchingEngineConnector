@@ -28,17 +28,22 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(7, IsRequired = false)]
         public double? ReservedLimitVolume { get; set; }
 
-        public static MeMarketOrderModel Create(string id, string clientId, string assetId, OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume)
+        [ProtoMember(8, IsRequired = false)]
+        public MeMarketOrderFeeModel Fee { get; set; }
+
+        public static MeMarketOrderModel Create(string id, string clientId, string assetId, OrderAction orderAction,
+            double volume, bool straight, double? reservedLimitVolume, MeMarketOrderFeeModel fee)
         {
             return new MeMarketOrderModel
             {
                 Id = id,
-                DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
+                DateTime = (long) System.DateTime.UtcNow.ToUnixTime(),
                 ClientId = clientId,
                 AssetId = assetId,
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
                 Straight = straight,
-                ReservedLimitVolume = reservedLimitVolume
+                ReservedLimitVolume = reservedLimitVolume,
+                Fee = fee
             };
         }
     }
