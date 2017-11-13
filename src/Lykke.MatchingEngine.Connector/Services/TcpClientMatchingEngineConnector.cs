@@ -9,7 +9,6 @@ using Lykke.MatchingEngine.Connector.Tools;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
-    [Obsolete("This interface is obsolete. Use TcpMatchingEngineClient instead.")]
     public class TcpClientMatchingEngineConnector : IMatchingEngineConnector
     {
         private readonly TasksManager<long, TheResponseModel> _tasksManager =
@@ -70,11 +69,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.MatchingEngineId;
         }
 
-        public async Task<MarketOrderResponse> HandleMarketOrderAsync(string id, string clientId, string assetPairId, OrderAction orderAction, double volume, bool straight,
-            double? reservedLimitVolume = null)
+        public async Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model)
         {
-            var marketOrderModel = MeMarketOrderModel.Create(id, clientId, assetPairId, orderAction, volume, straight, reservedLimitVolume);
-            var resultTask = _marketOrderTasksManager.Add(id);
+            var marketOrderModel = model.ToMeModel();
+            var resultTask = _marketOrderTasksManager.Add(marketOrderModel.Id);
             await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
             var result = await resultTask;
 
@@ -85,15 +83,12 @@ namespace Lykke.MatchingEngine.Connector.Services
             };
         }
 
-        public async Task<MeResponseModel> HandleLimitOrderAsync(string id,
-            string clientId, string assetPairId, OrderAction orderAction,
-            double volume, double price, bool cancelPreviousOrders = false)
+        public async Task<MeResponseModel> HandleLimitOrderAsync(LimitOrderModel model)
         {
-            var model = MeNewLimitOrderModel.Create(id, clientId, assetPairId,
-                orderAction, volume, price, cancelPreviousOrders);
-            var resultTask = _newTasksManager.Add(model.Id);
+            var limitOrderModel = model.ToNewMeModel();
+            var resultTask = _newTasksManager.Add(limitOrderModel.Id);
 
-            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel))
                 return null;
 
             var result = await resultTask;
