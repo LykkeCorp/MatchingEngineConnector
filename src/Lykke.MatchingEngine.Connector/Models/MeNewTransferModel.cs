@@ -27,8 +27,11 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(7, IsRequired = false)]
         public TransferFee Fee { get; set; }
 
+        [ProtoMember(8, IsRequired = false)]
+        public double Overdraft { get; set; }
+
         public static MeNewTransferModel Create(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage)
+            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
             return new MeNewTransferModel
             {
@@ -44,7 +47,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                     TargetClientId = feeClientId,
                     SizePercantage = feeSizePercentage,
                     Type = (int)TransferFeeType.CLIENT_FEE
-                }
+                },
+                Overdraft = overdraft
             };
         }
     }
