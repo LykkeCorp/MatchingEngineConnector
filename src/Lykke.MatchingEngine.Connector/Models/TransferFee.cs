@@ -12,13 +12,16 @@ namespace Lykke.MatchingEngine.Connector.Models
         public int Type { get; set; }
 
         [ProtoMember(2, IsRequired = false)]
-        public double SizePercantage { get; set; }
+        public double Size { get; set; }
 
         [ProtoMember(3, IsRequired = false)]
         public string SourceClientId { get; set; }
 
         [ProtoMember(4, IsRequired = false)]
         public string TargetClientId { get; set; }
+
+        [ProtoMember(5, IsRequired = false)]
+        public int SizeType { get; set; }
     }
 
     public enum TransferFeeType
@@ -27,4 +30,12 @@ namespace Lykke.MatchingEngine.Connector.Models
         CLIENT_FEE = 1,
         EXTERNAL_FEE = 2
     }
+
+
+    public enum TransferFeeSizeType
+    {
+        PERCENTAGE = 0,
+        ABSOLUTE = 1
+    }
+
 }
