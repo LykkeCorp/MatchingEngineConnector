@@ -11,14 +11,14 @@ namespace Autofac
     {
         [Obsolete("This interface is obsolete. Use BindMeClient instead.")]
         public static void BindMeConnector(this ContainerBuilder ioc,
-            IPEndPoint ipEndPoint, ISocketLog socketLog = null)
+            IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
         {
             if (socketLog == null)
                 socketLog = new SocketLogDynamic(i => { },
                     str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str)
                 );
 
-            var tcpClient = new TcpClientMatchingEngineConnector(ipEndPoint, socketLog);
+            var tcpClient = new TcpClientMatchingEngineConnector(ipEndPoint, socketLog, ignoreErrors);
             ioc.RegisterInstance(tcpClient)
                 .As<IMatchingEngineConnector>()
                 .As<TcpClientMatchingEngineConnector>();
@@ -27,14 +27,14 @@ namespace Autofac
         }
 
         public static void BindMeClient(this ContainerBuilder ioc,
-            IPEndPoint ipEndPoint, ISocketLog socketLog = null)
+            IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
         {
             if (socketLog == null)
                 socketLog = new SocketLogDynamic(i => { },
                     str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str)
                 );
 
-            var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, socketLog);
+            var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, socketLog, ignoreErrors);
             ioc.RegisterInstance(tcpMeClient)
                 .As<IMatchingEngineClient>()
                 .As<TcpMatchingEngineClient>();

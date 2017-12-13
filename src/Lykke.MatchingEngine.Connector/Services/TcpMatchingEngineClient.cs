@@ -14,7 +14,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<long, TheResponseModel> _tasksManager =
             new TasksManager<long, TheResponseModel>();
 
-        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager = 
+        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager =
             new TasksManager<string, TheNewResponseModel>();
 
         private readonly TasksManager<string, MarketOrderResponseModel> _marketOrderTasksManager =
@@ -33,7 +33,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 return _currentNumber++;
         }
 
-        public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ISocketLog socketLog = null)
+        public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
         {
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 socketLog,
@@ -42,7 +42,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 () =>
                 {
                     _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager,
-                        _marketOrderTasksManager);
+                        _marketOrderTasksManager, ignoreErrors);
                     return _tcpOrderSocketService;
                 });
         }

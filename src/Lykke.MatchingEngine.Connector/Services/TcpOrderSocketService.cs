@@ -11,40 +11,57 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
         private readonly TasksManager<string, MarketOrderResponseModel> _marketOrdersTasksManager;
+        private readonly bool _ignoreErrors;
 
         public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
             TasksManager<string, TheNewResponseModel> newTasksManager,
-            TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager)
+            TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager,
+            bool ignoreErrors = false)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
+            _ignoreErrors = ignoreErrors;
         }
 
         public async Task HandleDataFromSocket(object data)
         {
             await Task.Run(() =>
             {
-                var theResponse = data as TheResponseModel;
-                if (theResponse != null)
+                try
                 {
-                    Console.WriteLine($"Response ProcessId: {theResponse.ProcessId}. Data: {theResponse.ToJson()}");
-                    _tasksManager.Compliete(theResponse.ProcessId, theResponse);
-                    return;
-                }
+                    var theResponse = data as TheResponseModel;
+                    if (theResponse != null)
+                    {
+                        Console.WriteLine($"Response ProcessId: {theResponse.ProcessId}. Data: {theResponse.ToJson()}");
+                        _tasksManager.Compliete(theResponse.ProcessId, theResponse);
+                        return;
+                    }
 
-                var theNewResponse = data as TheNewResponseModel;
-                if (theNewResponse != null)
-                {
-                    Console.WriteLine($"Response Id: {theNewResponse.Id}. Data: {theNewResponse.ToJson()}");
-                    _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
-                }
+                    var theNewResponse = data as TheNewResponseModel;
+                    if (theNewResponse != null)
+                    {
+                        Console.WriteLine($"Response Id: {theNewResponse.Id}. Data: {theNewResponse.ToJson()}");
+                        _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
+                    }
 
-                var theMarketOrderResponse = data as MarketOrderResponseModel;
-                if (theMarketOrderResponse != null)
+                    var theMarketOrderResponse = data as MarketOrderResponseModel;
+                    if (theMarketOrderResponse != null)
+                    {
+                        Console.WriteLine($"Response Id: {theMarketOrderResponse.Id}. Data: {theMarketOrderResponse.ToJson()}");
+                        _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
+                    }
+                }
+                catch (System.Collections.Generic.KeyNotFoundException exception)
                 {
-                    Console.WriteLine($"Response Id: {theMarketOrderResponse.Id}. Data: {theMarketOrderResponse.ToJson()}");
-                    _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
+                    if (_ignoreErrors)
+                    {
+                        Console.WriteLine(exception);
+                    }
+                    else
+                    {
+                        throw;
+                    }
                 }
             });
         }
