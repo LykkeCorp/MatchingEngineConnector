@@ -11,16 +11,19 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
         private readonly TasksManager<string, MarketOrderResponseModel> _marketOrdersTasksManager;
+        private readonly ISocketLog _logger;
         private readonly bool _ignoreErrors;
 
         public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
             TasksManager<string, TheNewResponseModel> newTasksManager,
             TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager,
+            ISocketLog logger = null,
             bool ignoreErrors = false)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
+            _logger = logger;
             _ignoreErrors = ignoreErrors;
         }
 
@@ -33,7 +36,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                     var theResponse = data as TheResponseModel;
                     if (theResponse != null)
                     {
-                        Console.WriteLine($"Response ProcessId: {theResponse.ProcessId}. Data: {theResponse.ToJson()}");
+                        _logger?.Add($"Response ProcessId: {theResponse.ProcessId}. Data: {theResponse.ToJson()}");
                         _tasksManager.Compliete(theResponse.ProcessId, theResponse);
                         return;
                     }
@@ -41,14 +44,14 @@ namespace Lykke.MatchingEngine.Connector.Services
                     var theNewResponse = data as TheNewResponseModel;
                     if (theNewResponse != null)
                     {
-                        Console.WriteLine($"Response Id: {theNewResponse.Id}. Data: {theNewResponse.ToJson()}");
+                        _logger?.Add($"Response Id: {theNewResponse.Id}. Data: {theNewResponse.ToJson()}");
                         _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
                     }
 
                     var theMarketOrderResponse = data as MarketOrderResponseModel;
                     if (theMarketOrderResponse != null)
                     {
-                        Console.WriteLine($"Response Id: {theMarketOrderResponse.Id}. Data: {theMarketOrderResponse.ToJson()}");
+                        _logger?.Add($"Response Id: {theMarketOrderResponse.Id}. Data: {theMarketOrderResponse.ToJson()}");
                         _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
                     }
                 }
@@ -56,7 +59,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     if (_ignoreErrors)
                     {
-                        Console.WriteLine(exception);
+                        _logger?.Add(exception.ToString());
                     }
                     else
                     {

@@ -41,8 +41,12 @@ namespace Lykke.MatchingEngine.Connector.Services
                 3000,
                 () =>
                 {
-                    _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager,
-                        _marketOrderTasksManager, ignoreErrors);
+                    _tcpOrderSocketService = new TcpOrderSocketService(
+                        _tasksManager, 
+                        _newTasksManager,
+                        _marketOrderTasksManager,
+                        socketLog,
+                        ignoreErrors);
                     return _tcpOrderSocketService;
                 });
         }
