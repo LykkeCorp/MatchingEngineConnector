@@ -11,6 +11,8 @@ namespace Lykke.MatchingEngine.Connector.Services
 {
     public class TcpMatchingEngineClient : IMatchingEngineClient
     {
+        private readonly TimeSpan _defaultReconnectTimeOut = TimeSpan.FromSeconds(3);
+
         private readonly TasksManager<long, TheResponseModel> _tasksManager =
             new TasksManager<long, TheResponseModel>();
 
@@ -38,11 +40,11 @@ namespace Lykke.MatchingEngine.Connector.Services
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 socketLog,
                 ipEndPoint,
-                3000,
+                (int)_defaultReconnectTimeOut.TotalMilliseconds,
                 () =>
                 {
                     _tcpOrderSocketService = new TcpOrderSocketService(
-                        _tasksManager, 
+                        _tasksManager,
                         _newTasksManager,
                         _marketOrderTasksManager,
                         socketLog,

@@ -57,7 +57,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception exception)
             {
                 await Disconnect();
-                _log.Add("Error ReadData [" + Id + "]:" + exception);
+                _log.Add($"Error ReadData [{Id}]: {exception}");
             }
 
         }
@@ -134,7 +134,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception ex)
             {
                 await Disconnect();
-                _log.Add("SendDataToSocket Error. Id: "+Id+"; Msg: "+ex.Message);
+                _log.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
                 return false;
             }
         }
