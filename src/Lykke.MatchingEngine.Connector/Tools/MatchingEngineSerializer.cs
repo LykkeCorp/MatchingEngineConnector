@@ -54,7 +54,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             var datalen = await stream.ReadIntFromSocket();
             if (datalen == 0)
             {
-
+                CheckIfTypeIsSupportedOrThrow(dataType);
                 lock (_instancesCache)
                 {
                     if (!_instancesCache.ContainsKey(dataType))
@@ -68,10 +68,22 @@ namespace Lykke.MatchingEngine.Connector.Tools
             var data = await stream.ReadFromSocket(datalen);
             var memStream = new MemoryStream(data) { Position = 0 };
 
-
+            CheckIfTypeIsSupportedOrThrow(dataType);
             var result = Serializer.NonGeneric.Deserialize(Types[dataType], memStream);
             return new Tuple<object, int>(result, headerSize + datalen);
 
+        }
+
+        private void CheckIfTypeIsSupportedOrThrow(MeDataType dataType)
+        {
+            if (!Enum.IsDefined(typeof(MeDataType), dataType))
+            {
+                throw new InvalidOperationException($"Not defined MeDataType {dataType}");
+            }
+            if (!Types.ContainsKey(dataType))
+            {
+                throw new InvalidOperationException($"Not supported MeDataType {dataType}");
+            }
         }
 
 
