@@ -36,7 +36,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                     var theResponse = data as TheResponseModel;
                     if (theResponse != null)
                     {
-                        _logger?.Add($"Response ProcessId: {theResponse.ProcessId}. Data: {theResponse.ToJson()}");
+                        _logger?.Add($"Response ProcessId: {theResponse.ProcessId}");
                         _tasksManager.Compliete(theResponse.ProcessId, theResponse);
                         return;
                     }
@@ -44,14 +44,14 @@ namespace Lykke.MatchingEngine.Connector.Services
                     var theNewResponse = data as TheNewResponseModel;
                     if (theNewResponse != null)
                     {
-                        _logger?.Add($"Response Id: {theNewResponse.Id}. Data: {theNewResponse.ToJson()}");
+                        _logger?.Add($"Response Id: {theNewResponse.Id}");
                         _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
                     }
 
                     var theMarketOrderResponse = data as MarketOrderResponseModel;
                     if (theMarketOrderResponse != null)
                     {
-                        _logger?.Add($"Response Id: {theMarketOrderResponse.Id}. Data: {theMarketOrderResponse.ToJson()}");
+                        _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
                         _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
                     }
                 }
@@ -59,6 +59,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     if (_ignoreErrors)
                     {
+                        _logger?.Add($"Response: {data.ToJson()}");
                         _logger?.Add(exception.ToString());
                     }
                     else
