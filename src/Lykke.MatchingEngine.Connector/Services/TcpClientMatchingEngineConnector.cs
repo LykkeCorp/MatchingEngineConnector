@@ -33,7 +33,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 return _currentNumber++;
         }
 
-        public TcpClientMatchingEngineConnector(IPEndPoint ipEndPoint, ISocketLog socketLog = null)
+        public TcpClientMatchingEngineConnector(IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
         {
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 socketLog,
@@ -42,7 +42,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 () =>
                 {
                     _tcpOrderSocketService = new TcpOrderSocketService(_tasksManager, _newTasksManager,
-                        _marketOrderTasksManager);
+                        _marketOrderTasksManager, ignoreErrors);
                     return _tcpOrderSocketService;
                 });
         }
