@@ -57,7 +57,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception exception)
             {
                 await Disconnect();
-                _log.Add("Error ReadData [" + Id + "]:" + exception.Message);
+                _log.Add("Error ReadData [" + Id + "]:" + exception);
             }
 
         }
