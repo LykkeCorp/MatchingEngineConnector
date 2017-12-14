@@ -30,7 +30,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeNewTransferModel Create(string id, string fromClientId,
             string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage)
         {
-            var feeAbsolute = amount * feeSizePercentage;
+            var feeAbsolute = (double)((decimal)amount * (decimal)feeSizePercentage);
 
             return new MeNewTransferModel
             {
