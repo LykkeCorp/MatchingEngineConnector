@@ -15,6 +15,7 @@
         NotFound = 415,
         BalanceLowerThanReserved = 416,
         LeadToNegativeSpread = 417,
+        Duplicate = 430,
         //ME errors        
         Runtime = 500
     }
