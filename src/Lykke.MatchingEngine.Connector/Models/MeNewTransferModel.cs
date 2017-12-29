@@ -1,5 +1,6 @@
 ﻿using Common;
 using ProtoBuf;
+using System;
 
 namespace Lykke.MatchingEngine.Connector.Models
 {
@@ -30,7 +31,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeNewTransferModel Create(string id, string fromClientId,
             string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage)
         {
-            var feeAbsolute = (double)((decimal)amount * (decimal)feeSizePercentage);
+            var feeAbsolute = Math.Round(amount * feeSizePercentage, 15);
 
             return new MeNewTransferModel
             {
