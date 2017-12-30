@@ -154,7 +154,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -167,7 +170,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
