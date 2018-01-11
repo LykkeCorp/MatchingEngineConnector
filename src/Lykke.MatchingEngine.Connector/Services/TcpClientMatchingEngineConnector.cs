@@ -148,6 +148,18 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.ProcessId == id;
         }
 
+        public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount)
+        {
+            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount);
+            var resultTask = _newTasksManager.Add(id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                return null;
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
         public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType)
         {
             var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount, feeClientId, feeSize, feeSizeType);

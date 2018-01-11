@@ -27,7 +27,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public Fee Fee { get; set; }
         
         public static MeNewCashInOutModel Create(string id, string clientId,
-            string assetId, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType)
+            string assetId, double amount, string feeClientId = null, double feeSize = 0.0, FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
         {
             var feeAbsolute = 0.0;
 
