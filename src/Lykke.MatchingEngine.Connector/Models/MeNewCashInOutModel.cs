@@ -39,6 +39,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                     feeAbsolute = Math.Round(amount * feeSize, 15);
             }
 
+            var feeType = feeSize > 0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
+
             return new MeNewCashInOutModel
             {
                 Id = id,
@@ -51,7 +53,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                     SourceClientId = null,
                     TargetClientId = feeClientId,
                     Size = feeAbsolute,
-                    Type = (int)FeeType.CLIENT_FEE,
+                    Type = (int)feeType,
                     SizeType = (int)feeSizeType
                 }
             };
