@@ -30,6 +30,8 @@ namespace Lykke.MatchingEngine.Connector.Models
             string assetId, double amount, string feeClientId = null, double feeSize = 0.0, FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
         {
             var feeAbsolute = 0.0;
+            Fee fee = null;
+            var feeType = feeSize > 0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
 
             if (feeSize > 0)
             {
@@ -37,9 +39,16 @@ namespace Lykke.MatchingEngine.Connector.Models
                     feeAbsolute = feeSize;
                 if (feeSizeType == FeeSizeType.PERCENTAGE)
                     feeAbsolute = Math.Round(amount * feeSize, 15);
-            }
 
-            var feeType = feeSize > 0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
+                fee = new Fee()
+                {
+                    SourceClientId = null,
+                    TargetClientId = feeClientId,
+                    Size = feeAbsolute,
+                    Type = (int)feeType,
+                    SizeType = (int)feeSizeType
+                };
+            }
 
             return new MeNewCashInOutModel
             {
@@ -48,14 +57,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
                 Amount = amount + feeAbsolute,
-                Fee = new Fee()
-                {
-                    SourceClientId = null,
-                    TargetClientId = feeClientId,
-                    Size = feeAbsolute,
-                    Type = (int)feeType,
-                    SizeType = (int)feeSizeType
-                }
+                Fee = fee
             };
         }
     }
