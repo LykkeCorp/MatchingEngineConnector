@@ -52,7 +52,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                     Size = feeAbsolute,
                     Type = (int)FeeType.CLIENT_FEE,
                     SizeType = (int)FeeSizeType.ABSOLUTE
-                }
+                },
+                Overdraft = overdraft
             };
         }
     }
