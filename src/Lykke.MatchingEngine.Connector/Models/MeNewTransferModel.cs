@@ -29,8 +29,11 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(7, IsRequired = false)]
         public Fee Fee { get; set; }
 
+        [ProtoMember(8, IsRequired = false)]
+        public double Overdraft { get; set; }
+
         public static MeNewTransferModel Create(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage)
+            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
             var feeAbsolute = Math.Round(amount * feeSizePercentage, 15);
 

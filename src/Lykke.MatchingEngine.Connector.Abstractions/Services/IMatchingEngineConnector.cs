@@ -72,7 +72,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="feeSizePercentage">Fee amount (1.0 is 100%, 0.01 is 1%)</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> TransferAsync(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage);
+            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft);
 
         /// <summary>
         /// Swap some assets between clients

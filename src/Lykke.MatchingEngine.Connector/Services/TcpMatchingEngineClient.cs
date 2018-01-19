@@ -69,7 +69,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -88,13 +91,16 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage)
+            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
-            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount, feeClientId, feeSizePercentage);
+            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount, feeClientId, feeSizePercentage, overdraft);
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
