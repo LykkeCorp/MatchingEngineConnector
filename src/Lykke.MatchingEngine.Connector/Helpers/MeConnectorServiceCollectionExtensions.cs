@@ -9,22 +9,6 @@ namespace Microsoft.Extensions.DependencyInjection
 {
     public static class MeConnectorServiceCollectionExtensions
     {
-        [Obsolete("This interface is obsolete. Use AddMeClient instead.")]
-        public static void AddMeConnector(this IServiceCollection services,
-            IPEndPoint ipEndPoint, ISocketLog socketLog = null)
-        {
-            if (socketLog == null)
-                socketLog = new SocketLogDynamic(i => { },
-                    str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str)
-                );
-
-            var tcpClient = new TcpClientMatchingEngineConnector(ipEndPoint, socketLog);
-            services.AddSingleton<IMatchingEngineConnector>(tcpClient);
-            services.AddSingleton<TcpClientMatchingEngineConnector>(tcpClient);
-
-            tcpClient.Start();
-        }
-
         public static void AddMeClient(this IServiceCollection services,
             IPEndPoint ipEndPoint, ISocketLog socketLog = null)
         {

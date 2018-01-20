@@ -6,7 +6,7 @@ using System.Text;
 namespace Lykke.MatchingEngine.Connector.Models
 {
     [ProtoContract]
-    public class TransferFee
+    public class Fee
     {
         [ProtoMember(1, IsRequired = true)]
         public int Type { get; set; }
@@ -22,20 +22,6 @@ namespace Lykke.MatchingEngine.Connector.Models
 
         [ProtoMember(5, IsRequired = false)]
         public int SizeType { get; set; }
-    }
-
-    public enum TransferFeeType
-    {
-        NO_FEE = 0,
-        CLIENT_FEE = 1,
-        EXTERNAL_FEE = 2
-    }
-
-
-    public enum TransferFeeSizeType
-    {
-        PERCENTAGE = 0,
-        ABSOLUTE = 1
     }
 
 }

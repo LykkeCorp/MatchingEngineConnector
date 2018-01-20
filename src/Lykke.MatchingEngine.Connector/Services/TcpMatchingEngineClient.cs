@@ -78,6 +78,21 @@ namespace Lykke.MatchingEngine.Connector.Services
             return result.ToDomainModel();
         }
 
+        public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType)
+        {
+            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount, feeClientId, feeSize, feeSizeType);
+            var resultTask = _newTasksManager.Add(model.Id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
+                return null;
+            }
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
         public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
@@ -104,7 +119,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -116,7 +134,11 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(limitOrderModel.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel))
+            {
+                _newTasksManager.Compliete(model.Id, null);
+
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -128,7 +150,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();

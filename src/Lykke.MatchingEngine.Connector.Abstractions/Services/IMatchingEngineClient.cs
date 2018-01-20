@@ -35,6 +35,19 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount);
 
         /// <summary>
+        /// Cash In or Out some amount of an asset
+        /// </summary>
+        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
+        /// <param name="clientId">Client id</param>
+        /// <param name="assetId">Asset id</param>
+        /// <param name="amount">Amount to be cashed in or out</param>
+        /// <param name="feeClientId">Fee client id</param>
+        /// <param name="feeSize">Size of fee (0.01 = 1%, 1.0 = 100%)</param>
+        /// <param name="feeSizeType">Type of fee size (PERCENTAGE or ABSOLUTE)</param>
+        /// <returns>Status code and message</returns>
+        Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType);
+
+        /// <summary>
         /// Transfer some amount of an asset, from one client to another
         /// </summary>
         /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
@@ -42,6 +55,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="toClientId">Target client id</param>
         /// <param name="assetId">Asset id</param>
         /// <param name="amount">Amount to be transfered</param>
+        /// <param name="feeClientId">Fee client id</param>
+        /// <param name="feeSizePercentage">Fee amount (1.0 is 100%, 0.01 is 1%)</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft);
