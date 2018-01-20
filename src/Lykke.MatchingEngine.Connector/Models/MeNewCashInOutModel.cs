@@ -30,7 +30,7 @@ namespace Lykke.MatchingEngine.Connector.Models
             string assetId, double amount, string feeClientId = null, double feeSize = 0.0, FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
         {
             var feeAbsolute = 0.0;
-            var feeType = feeSize > 0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
+            var feeType = feeSize > 0.0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
 
             if (feeSize > 0)
             {

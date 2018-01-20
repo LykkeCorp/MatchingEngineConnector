@@ -84,7 +84,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -116,7 +119,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -128,7 +134,11 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(limitOrderModel.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel))
+            {
+                _newTasksManager.Compliete(model.Id, null);
+
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -140,7 +150,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
+            {
+                _newTasksManager.Compliete(model.Id, null);
                 return null;
+            }
 
             var result = await resultTask;
             return result.ToDomainModel();
