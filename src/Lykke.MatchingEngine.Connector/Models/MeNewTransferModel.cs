@@ -50,7 +50,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                     SourceClientId = null,
                     TargetClientId = feeClientId,
                     Size = feeAbsolute,
-                    Type = (int)FeeType.CLIENT_FEE,
+                    Type = (int)feeAbsolute.GetFeeType(),
                     SizeType = (int)FeeSizeType.ABSOLUTE
                 },
                 Overdraft = overdraft
