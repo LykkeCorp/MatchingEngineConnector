@@ -9,12 +9,13 @@ using Xunit;
 
 namespace Lykke.MatchingEngine.Connector.Tests
 {
-    public class UnitTest1
+    public class MeTests
     {
-        [Fact(Skip = "integration test")]
-        public async Task TransferTest()
+        [Theory(Skip = "integration test")]
+        [InlineData("")]
+        public async Task TransferTest(string meUrl)
         {
-            var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses("me.me.svc.cluster.local")[0].ToString()), 8888));
+            var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(meUrl)[0].ToString()), 8888));
             client.Start();
 
             await Task.Delay(500);
