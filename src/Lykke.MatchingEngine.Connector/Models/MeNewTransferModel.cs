@@ -44,13 +44,13 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ToClientId = toClientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount + feeAbsolute,
+                Amount = amount > 0 ? amount + feeAbsolute : amount - feeAbsolute,
                 Fee = new Fee()
                 {
                     SourceClientId = null,
                     TargetClientId = feeClientId,
                     Size = feeAbsolute,
-                    Type = (int)FeeType.CLIENT_FEE,
+                    Type = (int)feeAbsolute.GetFeeType(),
                     SizeType = (int)FeeSizeType.ABSOLUTE
                 },
                 Overdraft = overdraft

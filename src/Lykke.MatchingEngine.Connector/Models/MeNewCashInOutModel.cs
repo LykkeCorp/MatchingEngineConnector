@@ -29,8 +29,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeNewCashInOutModel Create(string id, string clientId,
             string assetId, double amount, string feeClientId = null, double feeSize = 0.0, FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
         {
-            var feeAbsolute = 0.0;
-            var feeType = feeSize > 0.0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
+            var feeAbsolute = 0.0;            
 
             if (feeSize > 0)
             {
@@ -45,7 +44,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 SourceClientId = null,
                 TargetClientId = feeClientId,
                 Size = feeAbsolute,
-                Type = (int)feeType,
+                Type = (int)feeSize.GetFeeType(),
                 SizeType = (int)feeSizeType
             };                        
 
@@ -55,9 +54,17 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ClientId = clientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount + feeAbsolute,
+                Amount = amount > 0 ? amount + feeAbsolute : amount - feeAbsolute,
                 Fee = fee
             };
+        }
+    }
+
+    public static class FeeExtensions
+    {
+        public static FeeType GetFeeType(this double feeSize)
+        {
+            return feeSize > 0.0 ? FeeType.CLIENT_FEE : FeeType.NO_FEE;
         }
     }
 }
