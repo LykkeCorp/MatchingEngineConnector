@@ -54,7 +54,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ClientId = clientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount + feeAbsolute,
+                Amount = amount > 0 ? amount + feeAbsolute : amount - feeAbsolute,
                 Fee = fee
             };
         }
