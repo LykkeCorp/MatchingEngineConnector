@@ -1,7 +1,5 @@
 ﻿using Common;
-using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using ProtoBuf;
-using System;
 
 namespace Lykke.MatchingEngine.Connector.Models
 {
@@ -27,16 +25,14 @@ namespace Lykke.MatchingEngine.Connector.Models
         public double Amount { get; set; }
 
         [ProtoMember(7, IsRequired = false)]
-        public Fee Fee { get; set; }
+        public FeeContract FeeContract { get; set; }
 
         [ProtoMember(8, IsRequired = false)]
         public double Overdraft { get; set; }
 
         public static MeNewTransferModel Create(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
+            string toClientId, string assetId, double amount, FeeContract feeContract, double overdraft)
         {
-            var feeAbsolute = Math.Round(amount * feeSizePercentage, 15);
-
             return new MeNewTransferModel
             {
                 Id = id,
@@ -44,15 +40,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                 ToClientId = toClientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount > 0 ? amount + feeAbsolute : amount - feeAbsolute,
-                Fee = new Fee()
-                {
-                    SourceClientId = null,
-                    TargetClientId = feeClientId,
-                    Size = feeAbsolute,
-                    Type = (int)feeAbsolute.GetFeeType(),
-                    SizeType = (int)FeeSizeType.ABSOLUTE
-                },
+                Amount = amount,
+                FeeContract = feeContract,
                 Overdraft = overdraft
             };
         }

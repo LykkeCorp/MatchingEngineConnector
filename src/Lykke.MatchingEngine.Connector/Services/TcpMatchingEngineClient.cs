@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Domain;
 using Lykke.MatchingEngine.Connector.Models;
 using Lykke.MatchingEngine.Connector.Tools;
 
@@ -66,21 +67,25 @@ namespace Lykke.MatchingEngine.Connector.Services
         public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount)
         {
             var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount);
+
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
-            {
-                _newTasksManager.Compliete(model.Id, null);
                 return null;
-            }
 
             var result = await resultTask;
             return result.ToDomainModel();
         }
 
-        public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType)
+        public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, int accuracy, double amount,
+            string feeClientId, double feeSize, FeeSizeType feeSizeType)
         {
-            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amount, feeClientId, feeSize, feeSizeType);
+            var fee = Fee.GenerateCashInOutFee(amount, accuracy, feeClientId, feeSize, feeSizeType);
+
+            var amountWithFee = fee.Apply(amount);
+
+            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amountWithFee, fee.ToApiModel());
+
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
@@ -94,9 +99,15 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
-            string toClientId, string assetId, double amount, string feeClientId, double feeSizePercentage, double overdraft)
+            string toClientId, string assetId, int accuracy, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
-            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amount, feeClientId, feeSizePercentage, overdraft);
+            var fee = Fee.GenerateTransferFee(amount, accuracy, feeClientId, feeSizePercentage);
+
+            var amountWithFee = fee.Apply(amount);
+
+            var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amountWithFee,
+                fee.ToApiModel(), overdraft);
+
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))

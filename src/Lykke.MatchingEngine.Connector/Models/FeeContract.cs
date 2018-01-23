@@ -1,12 +1,9 @@
 ﻿using ProtoBuf;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Lykke.MatchingEngine.Connector.Models
 {
     [ProtoContract]
-    public class Fee
+    public class FeeContract
     {
         [ProtoMember(1, IsRequired = true)]
         public int Type { get; set; }
