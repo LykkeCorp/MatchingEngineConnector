@@ -23,10 +23,10 @@ namespace Lykke.MatchingEngine.Connector.Models
         public double Amount { get; set; }
 
         [ProtoMember(6, IsRequired = false)]
-        public Fee Fee { get; set; }
+        public FeeContract FeeContract { get; set; }
         
         public static MeNewCashInOutModel Create(string id, string clientId,
-            string assetId, double amount, Fee fee = null)
+            string assetId, double amount, FeeContract feeContract = null)
         {
             return new MeNewCashInOutModel
             {
@@ -35,7 +35,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
                 Amount = amount,
-                Fee = fee
+                FeeContract = feeContract
             };
         }
     }

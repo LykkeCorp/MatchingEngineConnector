@@ -25,13 +25,13 @@ namespace Lykke.MatchingEngine.Connector.Models
         public double Amount { get; set; }
 
         [ProtoMember(7, IsRequired = false)]
-        public Fee Fee { get; set; }
+        public FeeContract FeeContract { get; set; }
 
         [ProtoMember(8, IsRequired = false)]
         public double Overdraft { get; set; }
 
         public static MeNewTransferModel Create(string id, string fromClientId,
-            string toClientId, string assetId, double amount, Fee fee, double overdraft)
+            string toClientId, string assetId, double amount, FeeContract feeContract, double overdraft)
         {
             return new MeNewTransferModel
             {
@@ -41,7 +41,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
                 Amount = amount,
-                Fee = fee,
+                FeeContract = feeContract,
                 Overdraft = overdraft
             };
         }

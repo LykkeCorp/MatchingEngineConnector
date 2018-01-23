@@ -1,17 +1,65 @@
 ﻿using Lykke.MatchingEngine.Connector.Abstractions.Models;
+using System;
+using Common;
+using Lykke.MatchingEngine.Connector.Models;
 
 namespace Lykke.MatchingEngine.Connector.Domain
 {
-    public class Fee
+    internal class Fee
     {
-        public FeeType Type { get; set; }
+        public FeeType Type { get; }
 
-        public double Size { get; set; }
+        public double Size { get; }
 
-        public string SourceClientId { get; set; }
+        public string SourceClientId { get; }
 
-        public string TargetClientId { get; set; }
+        public string TargetClientId { get; }
 
-        public FeeSizeType SizeType { get; set; }
+        public FeeSizeType SizeType { get; }
+
+        public Fee(FeeType type, double size, string sourceClientId, string targetClientId, FeeSizeType sizeType)
+        {
+            Type = type;
+            Size = size;
+            SourceClientId = sourceClientId;
+            TargetClientId = targetClientId;
+            SizeType = sizeType;
+        }
+
+        public double Apply(double sourceAmount)
+        {
+            return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+        }
+
+        public static Fee GenerateCashInOutFee(double amount, int accuracy, string clientId, double feeSize = 0d,
+            FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
+        {
+            var feeAbsolute = 0d;
+
+            if (feeSize > 0)
+            {
+                switch (feeSizeType)
+                {
+                    case FeeSizeType.ABSOLUTE:
+                        feeAbsolute = feeSize;
+                        break;
+                    case FeeSizeType.PERCENTAGE:
+                        feeAbsolute = Math.Round(amount * feeSize, 15);
+                        break;
+                    default: throw new Exception("Unknown feeContract size type");
+                }
+
+                feeAbsolute = feeAbsolute.TruncateDecimalPlaces(accuracy, true);
+            }
+
+            return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, feeSizeType);
+        }
+
+        public static Fee GenerateTransferFee(double amount, int accuracy, string feeClientId, double feeSizePercentage)
+        {
+            var feeAbsolute = Math.Round(amount * feeSizePercentage, 15).TruncateDecimalPlaces(accuracy, true);
+
+            return new Fee(FeeType.CLIENT_FEE, feeAbsolute, null, feeClientId, FeeSizeType.ABSOLUTE);
+        }
     }
 }

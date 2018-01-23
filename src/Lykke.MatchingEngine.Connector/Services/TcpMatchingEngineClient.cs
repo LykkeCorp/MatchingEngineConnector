@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Domain;
 using Lykke.MatchingEngine.Connector.Models;
 using Lykke.MatchingEngine.Connector.Tools;
 
@@ -23,8 +24,6 @@ namespace Lykke.MatchingEngine.Connector.Services
             new TasksManager<string, MarketOrderResponseModel>();
 
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
-
-        private readonly FeeCalculationService _feeCalculationService = new FeeCalculationService();
 
         private readonly object _lockObject = new object();
         private long _currentNumber = 1;
@@ -72,10 +71,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id);
 
             if (!await _tcpOrderSocketService.SendDataToSocket(model))
-            {
-                _newTasksManager.Compliete(model.Id, null);
                 return null;
-            }
 
             var result = await resultTask;
             return result.ToDomainModel();
@@ -84,9 +80,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         public async Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, int accuracy, double amount,
             string feeClientId, double feeSize, FeeSizeType feeSizeType)
         {
-            var fee = _feeCalculationService.GetCashInOutFee(amount, accuracy, feeClientId, feeSize, feeSizeType);
+            var fee = Fee.GenerateCashInOutFee(amount, accuracy, feeClientId, feeSize, feeSizeType);
 
-            var amountWithFee = _feeCalculationService.GetAmountWithFee(amount, fee);
+            var amountWithFee = fee.Apply(amount);
 
             var model = MeNewCashInOutModel.Create(id, clientId, assetId, amountWithFee, fee.ToApiModel());
 
@@ -105,9 +101,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         public async Task<MeResponseModel> TransferAsync(string id, string fromClientId,
             string toClientId, string assetId, int accuracy, double amount, string feeClientId, double feeSizePercentage, double overdraft)
         {
-            var fee = _feeCalculationService.GetTransferFee(amount, accuracy, feeClientId, feeSizePercentage);
+            var fee = Fee.GenerateTransferFee(amount, accuracy, feeClientId, feeSizePercentage);
 
-            var amountWithFee = _feeCalculationService.GetAmountWithFee(amount, fee);
+            var amountWithFee = fee.Apply(amount);
 
             var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amountWithFee,
                 fee.ToApiModel(), overdraft);

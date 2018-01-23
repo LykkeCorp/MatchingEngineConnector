@@ -2,11 +2,11 @@
 
 namespace Lykke.MatchingEngine.Connector
 {
-    public static class ConvertExtensions
+    internal static class ConvertExtensions
     {
-        public static Fee ToApiModel(this Domain.Fee src)
+        public static FeeContract ToApiModel(this Domain.Fee src)
         {
-            return new Fee
+            return new FeeContract
             {
                 Size = src.Size,
                 SizeType = (int) src.SizeType,
