@@ -1,7 +1,6 @@
 ﻿using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using ProtoBuf;
-using System;
 
 namespace Lykke.MatchingEngine.Connector.Models
 {
@@ -27,34 +26,15 @@ namespace Lykke.MatchingEngine.Connector.Models
         public Fee Fee { get; set; }
         
         public static MeNewCashInOutModel Create(string id, string clientId,
-            string assetId, double amount, string feeClientId = null, double feeSize = 0.0, FeeSizeType feeSizeType = FeeSizeType.ABSOLUTE)
+            string assetId, double amount, Fee fee = null)
         {
-            var feeAbsolute = 0.0;            
-
-            if (feeSize > 0)
-            {
-                if (feeSizeType == FeeSizeType.ABSOLUTE)
-                    feeAbsolute = feeSize;
-                if (feeSizeType == FeeSizeType.PERCENTAGE)
-                    feeAbsolute = Math.Round(amount * feeSize, 15);
-            }            
-
-            var fee = new Fee
-            {
-                SourceClientId = null,
-                TargetClientId = feeClientId,
-                Size = feeAbsolute,
-                Type = (int)feeSize.GetFeeType(),
-                SizeType = (int)feeSizeType
-            };                        
-
             return new MeNewCashInOutModel
             {
                 Id = id,
                 ClientId = clientId,
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
-                Amount = amount > 0 ? amount + feeAbsolute : amount - feeAbsolute,
+                Amount = amount,
                 Fee = fee
             };
         }
