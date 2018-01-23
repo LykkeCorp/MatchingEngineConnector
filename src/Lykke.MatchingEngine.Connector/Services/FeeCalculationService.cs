@@ -47,7 +47,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 SourceClientId = null,
                 TargetClientId = feeClientId,
                 Size = feeAbsolute,
-                Type = feeAbsolute.GetFeeType(),
+                Type = FeeType.CLIENT_FEE,
                 SizeType = FeeSizeType.ABSOLUTE
             };
         }
