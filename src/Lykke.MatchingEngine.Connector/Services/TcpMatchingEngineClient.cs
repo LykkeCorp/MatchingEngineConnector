@@ -82,9 +82,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             var fee = Fee.GenerateCashInOutFee(amount, accuracy, feeClientId, feeSize, feeSizeType);
 
-            var amountWithFee = fee.Apply(amount);
+            var amountWithFee = fee?.Apply(amount) ?? amount;
 
-            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amountWithFee, fee.ToApiModel());
+            var model = MeNewCashInOutModel.Create(id, clientId, assetId, amountWithFee, fee?.ToApiModel());
 
             var resultTask = _newTasksManager.Add(model.Id);
 
@@ -103,10 +103,10 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             var fee = Fee.GenerateTransferFee(amount, accuracy, feeClientId, feeSizePercentage);
 
-            var amountWithFee = fee.Apply(amount);
+            var amountWithFee = fee?.Apply(amount) ?? amount;
 
             var model = MeNewTransferModel.Create(id, fromClientId, toClientId, assetId, amountWithFee,
-                fee.ToApiModel(), overdraft);
+                fee?.ToApiModel(), overdraft);
 
             var resultTask = _newTasksManager.Add(model.Id);
 

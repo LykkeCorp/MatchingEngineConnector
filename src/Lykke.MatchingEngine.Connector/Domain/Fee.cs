@@ -5,6 +5,8 @@ using Lykke.MatchingEngine.Connector.Models;
 
 namespace Lykke.MatchingEngine.Connector.Domain
 {
+    //todo: Normally this logic has to be implemented inside FeeCalculator service
+
     internal class Fee
     {
         public FeeType Type { get; }
@@ -52,14 +54,20 @@ namespace Lykke.MatchingEngine.Connector.Domain
                 feeAbsolute = feeAbsolute.TruncateDecimalPlaces(accuracy, true);
             }
 
-            return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, feeSizeType);
+            if (Math.Abs(feeAbsolute) > double.Epsilon)
+                return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, feeSizeType);
+
+            return null;
         }
 
         public static Fee GenerateTransferFee(double amount, int accuracy, string feeClientId, double feeSizePercentage)
         {
             var feeAbsolute = Math.Round(amount * feeSizePercentage, 15).TruncateDecimalPlaces(accuracy, true);
 
-            return new Fee(FeeType.CLIENT_FEE, feeAbsolute, null, feeClientId, FeeSizeType.ABSOLUTE);
+            if (Math.Abs(feeAbsolute) > double.Epsilon)
+                return new Fee(FeeType.CLIENT_FEE, feeAbsolute, null, feeClientId, FeeSizeType.ABSOLUTE);
+
+            return null;
         }
     }
 }
