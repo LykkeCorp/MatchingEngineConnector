@@ -25,7 +25,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public double Amount { get; set; }
 
         [ProtoMember(7, IsRequired = false)]
-        public FeeContract FeeContract { get; set; }
+        public FeeContract Fee { get; set; }
 
         [ProtoMember(8, IsRequired = false)]
         public double Overdraft { get; set; }
@@ -41,7 +41,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
                 AssetId = assetId,
                 Amount = amount,
-                FeeContract = feeContract,
+                Fee = feeContract,
                 Overdraft = overdraft
             };
         }
