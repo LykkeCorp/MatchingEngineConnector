@@ -31,7 +31,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             [MeDataType.MarketOrderResponse] = typeof(MarketOrderResponseModel),
             [MeDataType.MarketOrder] = typeof(MeMarketOrderModel),
             [MeDataType.UpdateBalanceNew] = typeof(MeNewUpdateBalanceModel),
-            [MeDataType.MultiLimitOrder] = typeof(MeMultiLimitOrderModel),
+            [MeDataType.NewMultiLimitOrder] = typeof(MeMultiLimitOrderModel),
             [MeDataType.MultiLimitOrderResponse] = typeof(MeMultiLimitOrderResponseModel),
             [MeDataType.MultiLimitOrderCancel] = typeof(MeMultiLimitOrderCancelModel)
         };
