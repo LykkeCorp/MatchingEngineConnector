@@ -46,7 +46,7 @@ namespace Lykke.MatchingEngine.Connector.Domain
                         feeAbsolute = feeSize;
                         break;
                     case FeeSizeType.PERCENTAGE:
-                        feeAbsolute = Math.Round(amount * feeSize, 15);
+                        feeAbsolute = Math.Round(Math.Abs(amount) * feeSize, 15);
                         break;
                     default: throw new Exception("Unknown feeContract size type");
                 }
@@ -54,8 +54,8 @@ namespace Lykke.MatchingEngine.Connector.Domain
                 feeAbsolute = feeAbsolute.TruncateDecimalPlaces(accuracy, true);
             }
 
-            if (Math.Abs(feeAbsolute) > double.Epsilon)
-                return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, feeSizeType);
+            if (Math.Abs(feeAbsolute) > 0)
+                return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, FeeSizeType.ABSOLUTE);
 
             return null;
         }
