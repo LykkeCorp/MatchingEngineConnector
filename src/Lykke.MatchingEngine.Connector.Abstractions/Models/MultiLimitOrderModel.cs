@@ -1,4 +1,6 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿using System.Collections.Generic;
+
+namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public class MultiLimitOrderModel
     {
@@ -6,6 +8,6 @@
         public string ClientId { get; set; }
         public string AssetId { get; set; }
         public bool CancelPreviousOrders { get; set; }
-        public MultiOrderItemModel[] Orders { get; set; }
+        public IReadOnlyList<MultiOrderItemModel> Orders { get; set; }
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿using System.Collections.Generic;
+
+namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public class MultiLimitOrderResponse
     {
@@ -8,6 +10,6 @@
         public string Message { get; set; }
         public string TransactionId { get; set; }
         public string AssetPairId { get; set; }
-        public LimitOrderStatusModel[] Statuses { get; set; }
+        public IReadOnlyList<LimitOrderStatusModel> Statuses { get; set; }
     }
 }
