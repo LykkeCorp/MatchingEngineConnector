@@ -11,18 +11,21 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
         private readonly TasksManager<string, MarketOrderResponseModel> _marketOrdersTasksManager;
+        private readonly TasksManager<string, MeMultiLimitOrderResponseModel> _multiOrdersTasksManager;
         private readonly ISocketLog _logger;
         private readonly bool _ignoreErrors;
 
         public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
             TasksManager<string, TheNewResponseModel> newTasksManager,
             TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager,
+            TasksManager<string, MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
             ISocketLog logger = null,
             bool ignoreErrors = false)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
+            _multiOrdersTasksManager = multiOrdersTasksManager;
             _logger = logger;
             _ignoreErrors = ignoreErrors;
         }
@@ -53,6 +56,13 @@ namespace Lykke.MatchingEngine.Connector.Services
                     {
                         _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
                         _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
+                    }
+
+                    var multiLimitOrderResponse = data as MeMultiLimitOrderResponseModel;
+                    if (multiLimitOrderResponse != null)
+                    {
+                        _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
+                        _multiOrdersTasksManager.Compliete(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                     }
                 }
                 catch (System.Collections.Generic.KeyNotFoundException exception)
@@ -87,6 +97,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _tasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             _newTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             _marketOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
+            _multiOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             return Task.FromResult(0);
         }
     }

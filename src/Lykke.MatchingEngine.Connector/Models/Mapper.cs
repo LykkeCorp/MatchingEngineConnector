@@ -1,4 +1,5 @@
-﻿using Lykke.MatchingEngine.Connector.Abstractions.Models;
+﻿using System.Linq;
+using Lykke.MatchingEngine.Connector.Abstractions.Models;
 
 namespace Lykke.MatchingEngine.Connector.Models
 {
@@ -25,6 +26,20 @@ namespace Lykke.MatchingEngine.Connector.Models
         {
             return MeLimitOrderFeeModel.Create(model.Type, model.MakerSize, model.TakerSize, model.SourceClientId,
                 model.TargetClientId);
+        }
+
+        public static MeMultiLimitOrderModel ToMeModel(this MultiLimitOrderModel model)
+        {
+            return MeMultiLimitOrderModel.Create(
+                model.Id, model.ClientId, model.AssetId,
+                model.Orders.Select(m => MeMultiOrderItemModel.Create(
+                    m.Id, m.OrderAction, m.Volume, m.Price, m.Fee?.ToMeModel())).ToArray(),
+                model.CancelPreviousOrders);
+        }
+
+        public static MeMultiLimitOrderCancelModel ToMeModel(this MultiLimitOrderCancelModel model)
+        {
+            return MeMultiLimitOrderCancelModel.Create(model.Id, model.ClientId, model.AssetPairId, model.IsBuy);
         }
     }
 }

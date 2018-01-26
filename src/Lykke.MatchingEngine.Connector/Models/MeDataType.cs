@@ -9,7 +9,7 @@
         MarketOrderObsolete,
         LimitOrderCancel,
         BalanceUpdate,
-        MultiLimitOrder,
+        MultiLimitOrder = 51,
         Transfer,
         CashInOut,
         Swap,
@@ -20,6 +20,8 @@
         TheNewResponse = 99,
         MarketOrder = 53,
         MarketOrderResponse = 100,
-        UpdateBalanceNew = 11
+        UpdateBalanceNew = 11,
+        MultiLimitOrderCancel = 57,
+        MultiLimitOrderResponse = 98
     }
 }

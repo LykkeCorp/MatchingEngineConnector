@@ -115,5 +115,19 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// Handles market order, Matches with limit order if available
         /// </summary>
         Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model);
+
+        /// <summary>
+        /// Place multiple limit orders
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model);
+
+        /// <summary>
+        /// Cancel multiple limit orders
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model);
     }
 }
