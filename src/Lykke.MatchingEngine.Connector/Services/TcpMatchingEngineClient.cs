@@ -23,6 +23,9 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<string, MarketOrderResponseModel> _marketOrderTasksManager =
             new TasksManager<string, MarketOrderResponseModel>();
 
+        private readonly TasksManager<string, MeMultiLimitOrderResponseModel> _multiLimitOrderTasksManager =
+            new TasksManager<string, MeMultiLimitOrderResponseModel>();
+
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
 
         private readonly object _lockObject = new object();
@@ -48,6 +51,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _tasksManager,
                         _newTasksManager,
                         _marketOrderTasksManager,
+                        _multiLimitOrderTasksManager,
                         socketLog,
                         ignoreErrors);
                     return _tcpOrderSocketService;
@@ -199,6 +203,36 @@ namespace Lykke.MatchingEngine.Connector.Services
                 Price = result.Price,
                 Status = (MeStatusCodes)result.Status
             };
+        }
+
+        public async Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model)
+        {
+            var multiLimitOrderModel = model.ToMeModel();
+            var resultTask = _multiLimitOrderTasksManager.Add(model.Id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel))
+            {
+                _multiLimitOrderTasksManager.Compliete(model.Id, null);
+                return null;
+            }
+
+            var result = await resultTask;
+            return result.ToDomainModel();
+        }
+
+        public async Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model)
+        {
+            var multiLimitOrderCancelModel = model.ToMeModel();
+            var resultTask = _newTasksManager.Add(model.Id);
+
+            if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderCancelModel))
+            {
+                _newTasksManager.Compliete(model.Id, null);
+                return null;
+            }
+
+            var result = await resultTask;
+            return result.ToDomainModel();
         }
 
         public void Start()

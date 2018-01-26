@@ -30,7 +30,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
             [MeDataType.NewMarketOrder] = typeof(MeNewMarketOrderModel),
             [MeDataType.MarketOrderResponse] = typeof(MarketOrderResponseModel),
             [MeDataType.MarketOrder] = typeof(MeMarketOrderModel),
-            [MeDataType.UpdateBalanceNew] = typeof(MeNewUpdateBalanceModel)
+            [MeDataType.UpdateBalanceNew] = typeof(MeNewUpdateBalanceModel),
+            [MeDataType.NewMultiLimitOrder] = typeof(MeMultiLimitOrderModel),
+            [MeDataType.MultiLimitOrderResponse] = typeof(MeMultiLimitOrderResponseModel),
+            [MeDataType.MultiLimitOrderCancel] = typeof(MeMultiLimitOrderCancelModel)
         };
 
         private static readonly Dictionary<Type, MeDataType> TypesReverse = new Dictionary<Type, MeDataType>();
