@@ -15,6 +15,8 @@
         NotFound = 415,
         BalanceLowerThanReserved = 416,
         LeadToNegativeSpread = 417,
+        TooSmallVolume = 418,
+        InvalidFee = 419,
         Duplicate = 430,
         //ME errors        
         Runtime = 500
