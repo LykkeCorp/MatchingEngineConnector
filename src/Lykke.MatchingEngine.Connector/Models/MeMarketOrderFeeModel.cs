@@ -13,15 +13,21 @@ namespace Lykke.MatchingEngine.Connector.Models
         public string SourceClientId { get; set; }
         [ProtoMember(4, IsRequired = false)]
         public string TargetClientId { get; set; }
+        [ProtoMember(5, IsRequired = false)]
+        public int SizeType { get; set; }
+        [ProtoMember(6, IsRequired = false)]
+        public string[] AssetId { get; set; }
 
-        public static MeMarketOrderFeeModel Create(int type, double size, string sourceClientId, string targetClientid)
+        public static MeMarketOrderFeeModel Create(int type, double size, string sourceClientId, string targetClientid, int sizeType, string[] assetIds)
         {
             return new MeMarketOrderFeeModel
             {
                 Type = type,
                 Size = size,
                 SourceClientId = sourceClientId,
-                TargetClientId = targetClientid
+                TargetClientId = targetClientid,
+                SizeType = sizeType,
+                AssetId = assetIds
             };
         }
     }

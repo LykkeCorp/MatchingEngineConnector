@@ -1,4 +1,6 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿using System;
+
+namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public class MarketOrderModel
     {
@@ -10,5 +12,6 @@
         public bool Straight { get; set; }
         public double? ReservedLimitVolume { get; set; }
         public MarketOrderFeeModel Fee { get; set; }
+        public MarketOrderFeeModel[] Fees { get; set; } = Array.Empty<MarketOrderFeeModel>();
     }
 }
