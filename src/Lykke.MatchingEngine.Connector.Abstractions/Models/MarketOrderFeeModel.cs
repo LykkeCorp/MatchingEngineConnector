@@ -1,4 +1,6 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿using System;
+
+namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public class MarketOrderFeeModel
     {
@@ -6,6 +8,8 @@
         public double Size { get; set; }
         public string SourceClientId { get; set; }
         public string TargetClientId { get; set; }
+        public int SizeType { get; set; }
+        public string[] AssetId { get; set; } = Array.Empty<string>();
     }
 
     public enum MarketOrderFeeType

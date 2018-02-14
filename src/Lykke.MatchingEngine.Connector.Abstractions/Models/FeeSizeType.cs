@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public enum FeeSizeType
     {

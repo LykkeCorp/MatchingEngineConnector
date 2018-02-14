@@ -8,12 +8,12 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeMarketOrderModel ToMeModel(this MarketOrderModel model)
         {
             return MeMarketOrderModel.Create(model.Id, model.ClientId, model.AssetPairId, model.OrderAction,
-                model.Volume, model.Straight, model.ReservedLimitVolume, model.Fee?.ToMeModel());
+                model.Volume, model.Straight, model.ReservedLimitVolume, model.Fee?.ToMeModel(), model.Fees.Select(item => item.ToMeModel()).ToArray());
         }
 
         public static MeMarketOrderFeeModel ToMeModel(this MarketOrderFeeModel model)
         {
-            return MeMarketOrderFeeModel.Create(model.Type, model.Size, model.SourceClientId, model.TargetClientId);
+            return MeMarketOrderFeeModel.Create(model.Type, model.Size, model.SourceClientId, model.TargetClientId, model.SizeType, model.AssetId);
         }
 
         public static MeNewLimitOrderModel ToNewMeModel(this LimitOrderModel model)
