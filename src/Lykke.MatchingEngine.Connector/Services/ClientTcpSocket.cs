@@ -14,20 +14,26 @@ namespace Lykke.MatchingEngine.Connector.Services
         where TTcpSerializer : ITcpSerializer, new()
         where TService : class, ITcpClientService
     {
-        private int _id;
+        public const int PingInterval = 5;
 
         private readonly ISocketLog _log;
         private readonly IPEndPoint _ipEndPoint;
         private readonly int _reconnectTimeOut;
-
         private readonly Func<TService> _srvFactory;
 
-        public const int PingInterval = 5;
-
-
+        private int _id;
+        private bool _working;
         private TService _service;
 
-        public ClientTcpSocket(ISocketLog log, IPEndPoint ipEndPoint, int reconnectTimeOut, Func<TService> srvFactory)
+        public bool Connected => _service != null;
+
+        public SocketStatistic SocketStatistic { get; }
+
+        public ClientTcpSocket(
+            ISocketLog log,
+            IPEndPoint ipEndPoint,
+            int reconnectTimeOut,
+            Func<TService> srvFactory)
         {
             SocketStatistic = new SocketStatistic();
             _log = log;
@@ -35,11 +41,55 @@ namespace Lykke.MatchingEngine.Connector.Services
             _reconnectTimeOut = reconnectTimeOut;
 
             _srvFactory = srvFactory;
-
         }
 
+        public async void SocketThread()
+        {
+            while (_working)
+            {
+                try
+                {
 
-        private bool _working;
+                    // Пытаемся создать соединение с сервером
+                    var connection = await Connect();
+
+                    // Запускаем процесс чтения данных в другом потоке
+                    await Task.WhenAny(
+                        connection.StartReadData(),
+                        SocketPingProcess(connection)
+                        );
+
+                }
+                catch (SocketException se)
+                {
+                    if (se.SocketErrorCode == SocketError.ConnectionRefused)
+                        _log?.Add("Connection support exception: " + se.Message);
+                }
+                catch (Exception ex)
+                {
+                    _log?.Add("Connection support fatal exception:" + ex.Message);
+                }
+                finally
+                {
+                    _service = default(TService);
+                    _log?.Add("Connection Timeout...");
+                    Thread.Sleep(_reconnectTimeOut);
+                }
+            }
+        }
+
+        public void Start()
+        {
+            if (_working)
+                throw new Exception("Client socket has already started");
+            _working = true;
+            SocketThread();
+        }
+
+        TService IClientSocketConsumer<TService>.GetConnection()
+        {
+            return _service;
+        }
 
         // Метод, который пытается сделать соединение с сервером
         private async Task<TcpConnection> Connect()
@@ -56,13 +106,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             _log?.Add("Connected. Id=" + connection.Id);
 
             return connection;
-
         }
 
         private async Task SocketPingProcess(TcpConnection connection)
         {
-
-
             var lastSendPingTime = DateTime.UtcNow;
             try
             {
@@ -92,61 +139,6 @@ namespace Lykke.MatchingEngine.Connector.Services
                 await connection.Disconnect();
                 _log?.Add("Ping Thread Exception: " + exception.Message);
             }
-        }
-
-        public async void SocketThread()
-        {
-            while (_working)
-            {
-
-                try
-                {
-
-                    // Пытаемся создать соединение с сервером
-                    var connection = await Connect();
-
-                    // Запускаем процесс чтения данных в другом потоке
-                    await Task.WhenAny(
-                        connection.StartReadData(),
-                        SocketPingProcess(connection)
-                        );
-
-                }
-                catch (SocketException se)
-                {
-                    if (se.SocketErrorCode == SocketError.ConnectionRefused)
-                        _log?.Add("Connection support exception: " + se.Message);
-
-                }
-                catch (Exception ex)
-                {
-                    _log?.Add("Connection support fatal exception:" + ex.Message);
-                }
-                finally
-                {
-                    _service = default(TService);
-                    _log?.Add("Connection Timeout...");
-                    Thread.Sleep(_reconnectTimeOut);
-                }
-            }
-
-        }
-
-        public void Start()
-        {
-            if (_working)
-                throw new Exception("Client socket has already started");
-            _working = true;
-            SocketThread();
-        }
-
-        public bool Connected => _service != null;
-
-        public SocketStatistic SocketStatistic { get; }
-
-        TService IClientSocketConsumer<TService>.GetConnection()
-        {
-            return _service;
         }
     }
 }

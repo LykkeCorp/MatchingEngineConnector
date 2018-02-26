@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
@@ -22,7 +21,11 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="assetId">Id of the asset</param>
         /// <param name="value">New balance value</param>
         /// <returns></returns>
-        Task UpdateBalanceAsync(string id, string clientId, string assetId, double value);
+        Task UpdateBalanceAsync(
+            string id,
+            string clientId,
+            string assetId,
+            double value);
 
         /// <summary>
         /// Cash In or Out some amount of an asset
@@ -32,7 +35,11 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="assetId">Asset id</param>
         /// <param name="amount">Amount to be cashed in or out</param>
         /// <returns>Status code and message</returns>
-        Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, double amount);
+        Task<MeResponseModel> CashInOutAsync(
+            string id,
+            string clientId,
+            string assetId,
+            double amount);
 
         /// <summary>
         /// Cash In or Out some amount of an asset
@@ -46,7 +53,15 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="feeSize">Size of fee (0.01 = 1%, 1.0 = 100%)</param>
         /// <param name="feeSizeType">Type of fee size (PERCENTAGE or ABSOLUTE)</param>
         /// <returns>Status code and message</returns>
-        Task<MeResponseModel> CashInOutAsync(string id, string clientId, string assetId, int accuracy, double amount, string feeClientId, double feeSize, FeeSizeType feeSizeType);
+        Task<MeResponseModel> CashInOutAsync(
+            string id,
+            string clientId,
+            string assetId,
+            int accuracy,
+            double amount,
+            string feeClientId,
+            double feeSize,
+            FeeSizeType feeSizeType);
 
         /// <summary>
         /// Transfer some amount of an asset, from one client to another
@@ -60,8 +75,16 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="feeClientId">Fee client id</param>
         /// <param name="feeSizePercentage">Fee amount (1.0 is 100%, 0.01 is 1%)</param>
         /// <returns>Status code and message</returns>
-        Task<MeResponseModel> TransferAsync(string id, string fromClientId,
-            string toClientId, string assetId, int accuracy, double amount, string feeClientId, double feeSizePercentage, double overdraft);
+        Task<MeResponseModel> TransferAsync(
+            string id,
+            string fromClientId,
+            string toClientId,
+            string assetId,
+            int accuracy,
+            double amount,
+            string feeClientId,
+            double feeSizePercentage,
+            double overdraft);
 
         /// <summary>
         /// Swap some assets between clients
@@ -74,9 +97,14 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="assetId2">Second asset id</param>
         /// <param name="amount2">Second amount</param>
         /// <returns>Status code and message</returns>
-        Task<MeResponseModel> SwapAsync(string id,
-            string clientId1, string assetId1, double amount1,
-            string clientId2, string assetId2, double amount2);
+        Task<MeResponseModel> SwapAsync(
+            string id,
+            string clientId1,
+            string assetId1,
+            double amount1,
+            string clientId2,
+            string assetId2,
+            double amount2);
 
         /// <summary>
         /// Place a limit order on the matching engine
@@ -108,8 +136,13 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="straight"></param>
         /// <param name="reservedLimitVolume"></param>
         /// <returns></returns>
-        Task<string> HandleMarketOrderAsync(string clientId, string assetPairId,
-            OrderAction orderAction, double volume, bool straight, double? reservedLimitVolume = null);
+        Task<string> HandleMarketOrderAsync(
+            string clientId,
+            string assetPairId,
+            OrderAction orderAction,
+            double volume,
+            bool straight,
+            double? reservedLimitVolume = null);
 
         /// <summary>
         /// Handles market order, Matches with limit order if available

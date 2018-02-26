@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Models;
@@ -10,7 +11,6 @@ namespace Lykke.MatchingEngine.Connector.Tools
 {
     public class MatchingEngineSerializer : ITcpSerializer
     {
-
         private static readonly Dictionary<MeDataType, Type> Types = new Dictionary<MeDataType, Type>
         {
             [MeDataType.Ping] = typeof(MePingModel),
@@ -37,8 +37,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
         };
 
         private static readonly Dictionary<Type, MeDataType> TypesReverse = new Dictionary<Type, MeDataType>();
+        private static readonly byte[] PingPacket = { (byte)MeDataType.Ping };
 
         private readonly Dictionary<MeDataType, object> _instancesCache = new Dictionary<MeDataType, object>();
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         static MatchingEngineSerializer()
         {
@@ -58,14 +60,18 @@ namespace Lykke.MatchingEngine.Connector.Tools
             if (datalen == 0)
             {
                 CheckIfTypeIsSupportedOrThrow(dataType);
-                lock (_instancesCache)
+                await _lock.WaitAsync();
+                try
                 {
                     if (!_instancesCache.ContainsKey(dataType))
                         _instancesCache.Add(dataType, Types[dataType].CreateUsingDefaultConstructor());
 
                     return new Tuple<object, int>(_instancesCache[dataType], headerSize);
                 }
-
+                finally
+                {
+                    _lock.Release();
+                }
             }
 
             var data = await stream.ReadFromSocket(datalen);
@@ -74,7 +80,6 @@ namespace Lykke.MatchingEngine.Connector.Tools
             CheckIfTypeIsSupportedOrThrow(dataType);
             var result = Serializer.NonGeneric.Deserialize(Types[dataType], memStream);
             return new Tuple<object, int>(result, headerSize + datalen);
-
         }
 
         private void CheckIfTypeIsSupportedOrThrow(MeDataType dataType)
@@ -89,14 +94,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
         }
 
-
-        private static readonly byte[] PingPacket = { (byte)MeDataType.Ping };
-
         public byte[] Serialize(object data)
         {
             if (data is MePingModel)
                 return PingPacket;
-
 
             var type = TypesReverse[data.GetType()];
 
