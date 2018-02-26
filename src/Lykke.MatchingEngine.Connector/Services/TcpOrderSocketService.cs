@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -65,7 +66,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _multiOrdersTasksManager.Compliete(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                     }
                 }
-                catch (System.Collections.Generic.KeyNotFoundException exception)
+                catch (KeyNotFoundException exception)
                 {
                     if (_ignoreErrors)
                     {

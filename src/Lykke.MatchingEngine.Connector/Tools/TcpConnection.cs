@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Helpers;
 
 namespace Lykke.MatchingEngine.Connector.Tools
 {
@@ -15,10 +17,23 @@ namespace Lykke.MatchingEngine.Connector.Tools
         private readonly TcpClient _socket;
         private readonly SocketStatistic _socketStatistic;
         private readonly ISocketLog _log;
+        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+
         internal Action<TcpConnection> DisconnectAction;
 
-        public TcpConnection(ITcpService tcpService,
-            ITcpSerializer tcpSerializer, TcpClient socket, SocketStatistic socketStatistic, ISocketLog log, int id)
+        public ITcpService TcpService { get; }
+
+        public int Id { get; }
+
+        public bool Disconnected { get; private set; }
+
+        public TcpConnection(
+            ITcpService tcpService,
+            ITcpSerializer tcpSerializer,
+            TcpClient socket,
+            SocketStatistic socketStatistic,
+            ISocketLog log,
+            int id)
         {
             Id = id;
             _tcpSerializer = tcpSerializer;
@@ -28,38 +43,6 @@ namespace Lykke.MatchingEngine.Connector.Tools
             TcpService = tcpService;
             tcpService.SendDataToSocket = SendDataToSocket;
             _socketStatistic.LastConnectionTime = DateTime.UtcNow;
-
-
-        }
-
-        public ITcpService TcpService { get; }
-
-
-        public int Id { get; }
-
-        private async Task ReadThread()
-        {
-
-            try
-            {
-                var stream = _socket.GetStream();
-
-                while (!Disconnected)
-                {
-                    var tcpData = await _tcpSerializer.Deserialize(stream);
-                    _socketStatistic.LastRecieveTime = DateTime.UtcNow;
-                    _socketStatistic.Recieved += tcpData.Item2;
-
-                    if (tcpData.Item1 != null)
-                        await TcpService.HandleDataFromSocket(tcpData.Item1);
-                }
-            }
-            catch (Exception exception)
-            {
-                await Disconnect();
-                _log.Add($"Error ReadData [{Id}]: {exception}");
-            }
-
         }
 
         public async Task StartReadData()
@@ -71,22 +54,22 @@ namespace Lykke.MatchingEngine.Connector.Tools
             await ReadThread();
         }
 
-        public bool Disconnected { get; private set; }
-
-        private readonly object _lockObject = new object();
-
         public async Task Disconnect()
         {
             try
             {
-
                 // Вычитаем состояние дисконнект в одном потоке и сменим состояние в Disconnect=true
                 bool disconnected;
 
-                lock (_lockObject)
+                await _lock.WaitAsync();
+                try
                 {
                     disconnected = Disconnected;
                     Disconnected = true;
+                }
+                finally
+                {
+                    _lock.Release();
                 }
 
                 // Если вычитанное состояние не было дисконнект- почистим все что необхдимо почистить
@@ -113,7 +96,6 @@ namespace Lykke.MatchingEngine.Connector.Tools
             {
                 _log.Add("Disconnect error. Id=" + Id + "; Msg:" + exception.Message);
             }
-
         }
 
         public async Task<bool> SendDataToSocket(object data)
@@ -135,9 +117,33 @@ namespace Lykke.MatchingEngine.Connector.Tools
             {
                 await Disconnect();
                 _log.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
+                TelemetryHelper.SubmitException(ex);
                 return false;
             }
         }
 
+        private async Task ReadThread()
+        {
+            try
+            {
+                var stream = _socket.GetStream();
+
+                while (!Disconnected)
+                {
+                    var tcpData = await _tcpSerializer.Deserialize(stream);
+                    _socketStatistic.LastRecieveTime = DateTime.UtcNow;
+                    _socketStatistic.Recieved += tcpData.Item2;
+
+                    if (tcpData.Item1 != null)
+                        await TcpService.HandleDataFromSocket(tcpData.Item1);
+                }
+            }
+            catch (Exception exception)
+            {
+                await Disconnect();
+                _log.Add($"Error ReadData [{Id}]: {exception}");
+                TelemetryHelper.SubmitException(exception);
+            }
+        }
     }
 }
