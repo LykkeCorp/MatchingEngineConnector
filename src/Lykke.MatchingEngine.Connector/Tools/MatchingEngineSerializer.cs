@@ -96,10 +96,12 @@ namespace Lykke.MatchingEngine.Connector.Tools
         public byte[] Serialize(object data)
         {
             if (data is MePingModel)
+            {
                 return PingPacket;
-
+            }
+            const int defaultCapacity = 256;
             var type = TypesReverse[data.GetType()];
-            using (var memStream = new MemoryStream())
+            using (var memStream = new MemoryStream(defaultCapacity))
             {
                 memStream.Position = HeaderSize;
 
