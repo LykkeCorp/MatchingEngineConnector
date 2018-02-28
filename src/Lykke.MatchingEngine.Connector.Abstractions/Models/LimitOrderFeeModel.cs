@@ -7,6 +7,10 @@
         public double TakerSize { get; set; }
         public string SourceClientId { get; set; }
         public string TargetClientId { get; set; }
+        public int MakerSizeType { get; set; }
+        public int TakerSizeType { get; set; }
+        public string[] AssetId { get; set; }
+        public double MakerFeeModificator { get; set; }
     }
 
     public enum LimitOrderFeeType
