@@ -10,7 +10,7 @@ using Lykke.MatchingEngine.Connector.Tools;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
-    public class ClientTcpSocket<TTcpSerializer, TService> : IClientSocketConsumer<TService>
+    internal class ClientTcpSocket<TTcpSerializer, TService> : IClientSocketConsumer<TService>
         where TTcpSerializer : ITcpSerializer, new()
         where TService : class, ITcpClientService
     {
@@ -43,7 +43,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _srvFactory = srvFactory;
         }
 
-        public async void SocketThread()
+        private async void SocketThread()
         {
             while (_working)
             {

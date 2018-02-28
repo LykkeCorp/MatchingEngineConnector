@@ -81,7 +81,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
                     _socketStatistic.LastDisconnectionTime = DateTime.UtcNow;
 
-                    _log.Add("Disconnected[" + Id + "]");
+                    _log?.Add("Disconnected[" + Id + "]");
 
                     var socketNotifier = TcpService as ISocketNotifyer;
                     if (socketNotifier != null)
@@ -94,7 +94,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
             catch (Exception exception)
             {
-                _log.Add("Disconnect error. Id=" + Id + "; Msg:" + exception.Message);
+                _log?.Add("Disconnect error. Id=" + Id + "; Msg:" + exception.Message);
             }
         }
 
@@ -116,7 +116,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception ex)
             {
                 await Disconnect();
-                _log.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
+                _log?.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
                 TelemetryHelper.SubmitException(ex);
                 return false;
             }
@@ -141,7 +141,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception exception)
             {
                 await Disconnect();
-                _log.Add($"Error ReadData [{Id}]: {exception}");
+                _log?.Add($"Error ReadData [{Id}]: {exception}");
                 TelemetryHelper.SubmitException(exception);
             }
         }

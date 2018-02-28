@@ -7,7 +7,7 @@ using Lykke.MatchingEngine.Connector.Models;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
-    public class TcpOrderSocketService : ITcpClientService, ISocketNotifyer
+    internal class TcpOrderSocketService : ITcpClientService, ISocketNotifyer
     {
         private readonly TasksManager<long, TheResponseModel> _tasksManager;
         private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;

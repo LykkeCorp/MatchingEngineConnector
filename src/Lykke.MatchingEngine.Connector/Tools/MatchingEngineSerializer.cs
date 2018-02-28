@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Models;
@@ -9,8 +8,10 @@ using ProtoBuf;
 
 namespace Lykke.MatchingEngine.Connector.Tools
 {
-    public class MatchingEngineSerializer : ITcpSerializer
+    internal sealed class MatchingEngineSerializer : ITcpSerializer
     {
+        private const int HeaderSize = 5;
+
         private static readonly Dictionary<MeDataType, Type> Types = new Dictionary<MeDataType, Type>
         {
             [MeDataType.Ping] = typeof(MePingModel),
@@ -40,49 +41,47 @@ namespace Lykke.MatchingEngine.Connector.Tools
         private static readonly byte[] PingPacket = { (byte)MeDataType.Ping };
 
         private readonly Dictionary<MeDataType, object> _instancesCache = new Dictionary<MeDataType, object>();
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+
+        public MatchingEngineSerializer()
+        {
+            foreach (var tp in Types)
+            {
+                _instancesCache.Add(tp.Key, tp.Value.CreateUsingDefaultConstructor());
+            }
+        }
 
         static MatchingEngineSerializer()
         {
             foreach (var tp in Types)
+            {
                 TypesReverse.Add(tp.Value, tp.Key);
+            }
         }
 
         public async Task<Tuple<object, int>> Deserialize(Stream stream)
         {
-            const int headerSize = 5;
-
             var dataType = (MeDataType)await stream.ReadByteFromSocket();
             if (dataType == MeDataType.Ping)
                 return new Tuple<object, int>(MePingModel.Instance, 1);
 
+            CheckIfTypeIsSupportedOrThrow(dataType);
+
             var datalen = await stream.ReadIntFromSocket();
             if (datalen == 0)
             {
-                CheckIfTypeIsSupportedOrThrow(dataType);
-                await _lock.WaitAsync();
-                try
-                {
-                    if (!_instancesCache.ContainsKey(dataType))
-                        _instancesCache.Add(dataType, Types[dataType].CreateUsingDefaultConstructor());
-
-                    return new Tuple<object, int>(_instancesCache[dataType], headerSize);
-                }
-                finally
-                {
-                    _lock.Release();
-                }
+                return new Tuple<object, int>(_instancesCache[dataType], HeaderSize);
             }
 
-            var data = await stream.ReadFromSocket(datalen);
-            var memStream = new MemoryStream(data) { Position = 0 };
 
-            CheckIfTypeIsSupportedOrThrow(dataType);
-            var result = Serializer.NonGeneric.Deserialize(Types[dataType], memStream);
-            return new Tuple<object, int>(result, headerSize + datalen);
+            var data = await stream.ReadFromSocket(datalen);
+            using (var memStream = new MemoryStream(data) { Position = 0 })
+            {
+                var result = Serializer.NonGeneric.Deserialize(Types[dataType], memStream);
+                return new Tuple<object, int>(result, HeaderSize + datalen);
+            }
         }
 
-        private void CheckIfTypeIsSupportedOrThrow(MeDataType dataType)
+        private static void CheckIfTypeIsSupportedOrThrow(MeDataType dataType)
         {
             if (!Enum.IsDefined(typeof(MeDataType), dataType))
             {
@@ -100,17 +99,22 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 return PingPacket;
 
             var type = TypesReverse[data.GetType()];
+            using (var memStream = new MemoryStream())
+            {
+                memStream.Position = HeaderSize;
 
-            var memStream = new MemoryStream();
-            Serializer.Serialize(memStream, data);
-            var outData = memStream.ToArray();
+                Serializer.Serialize(memStream, data);
 
-            var outStream = new MemoryStream();
-            outStream.WriteByte((byte)type);
-            outStream.WriteInt(outData.Length);
-            outStream.Write(outData, 0, outData.Length);
+                var size = memStream.Length - HeaderSize;
 
-            return outStream.ToArray();
+                memStream.Position = 0;
+
+                memStream.WriteByte((byte)type);
+                memStream.WriteInt((int)size);
+
+                return memStream.ToArray();
+            }
+
         }
     }
 }
