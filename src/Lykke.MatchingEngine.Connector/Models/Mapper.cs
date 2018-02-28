@@ -25,7 +25,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeLimitOrderFeeModel ToMeModel(this LimitOrderFeeModel model)
         {
             return MeLimitOrderFeeModel.Create(model.Type, model.MakerSize, model.TakerSize, model.SourceClientId,
-                model.TargetClientId);
+                model.TargetClientId, model.MakerSizeType, model.TakerSizeType, model.AssetId, model.MakerFeeModificator);
         }
 
         public static MeMultiLimitOrderModel ToMeModel(this MultiLimitOrderModel model)

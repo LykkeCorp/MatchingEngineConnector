@@ -15,9 +15,17 @@ namespace Lykke.MatchingEngine.Connector.Models
         public string SourceClientId { get; set; }
         [ProtoMember(5, IsRequired = false)]
         public string TargetClientId { get; set; }
+        [ProtoMember(6, IsRequired = false)]
+        public int MakerSizeType { get; set; }
+        [ProtoMember(7, IsRequired = false)]
+        public int TakerSizeType { get; set; }
+        [ProtoMember(8, IsRequired = false)]
+        public string[] AssetId { get; set; }
+        [ProtoMember(9, IsRequired = false)]
+        public double MakerFeeModificator { get; set; }
 
         public static MeLimitOrderFeeModel Create(int type, double makerSize, double takerSize, string sourceClientId,
-            string targetClientId)
+            string targetClientId, int makerSizeType, int takerSizeType, string[] assetId, double makerFeeModificator)
         {
             return new MeLimitOrderFeeModel
             {
@@ -25,7 +33,11 @@ namespace Lykke.MatchingEngine.Connector.Models
                 MakerSize = makerSize,
                 TakerSize = takerSize,
                 SourceClientId = sourceClientId,
-                TargetClientId = targetClientId
+                TargetClientId = targetClientId,
+                MakerSizeType = makerSizeType,
+                TakerSizeType = takerSizeType,
+                AssetId = assetId,
+                MakerFeeModificator = makerFeeModificator
             };
         }
     }
