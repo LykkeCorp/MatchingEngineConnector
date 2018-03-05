@@ -1,6 +1,6 @@
 ﻿namespace Lykke.MatchingEngine.Connector.Models
 {
-    public enum MeDataType
+    internal enum MeDataType : byte
     {
         TheResponse = 0,
         Ping = 1,
