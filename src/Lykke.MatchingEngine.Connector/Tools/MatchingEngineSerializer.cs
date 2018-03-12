@@ -58,18 +58,20 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
         }
 
-        public async Task<Tuple<object, int>> Deserialize(Stream stream)
+        public async Task<(object response, int receivedBytes)> Deserialize(Stream stream)
         {
             var dataType = (MeDataType)await stream.ReadByteFromSocket();
             if (dataType == MeDataType.Ping)
-                return new Tuple<object, int>(MePingModel.Instance, 1);
+            {
+                return (MePingModel.Instance, 1);
+            }
 
             CheckIfTypeIsSupportedOrThrow(dataType);
 
             var datalen = await stream.ReadIntFromSocket();
             if (datalen == 0)
             {
-                return new Tuple<object, int>(_instancesCache[dataType], HeaderSize);
+                return (_instancesCache[dataType], HeaderSize);
             }
 
 
@@ -77,7 +79,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             using (var memStream = new MemoryStream(data) { Position = 0 })
             {
                 var result = Serializer.NonGeneric.Deserialize(Types[dataType], memStream);
-                return new Tuple<object, int>(result, HeaderSize + datalen);
+                return (result, HeaderSize + datalen);
             }
         }
 

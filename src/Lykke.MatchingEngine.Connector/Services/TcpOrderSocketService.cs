@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -31,48 +32,45 @@ namespace Lykke.MatchingEngine.Connector.Services
             _ignoreErrors = ignoreErrors;
         }
 
-        public Task HandleDataFromSocket(object data)
+        public void HandleDataFromSocket(object data)
         {
-            return Task.Run(() =>
+            try
             {
-                try
+                switch (data)
                 {
-                    switch (data)
-                    {
-                        case TheResponseModel theResponse:
-                            _logger?.Add($"Response ProcessId: {theResponse.ProcessId}");
-                            _tasksManager.SetResult(theResponse.ProcessId, theResponse);
-                            break;
-                        case TheNewResponseModel theNewResponse:
-                            _logger?.Add($"Response Id: {theNewResponse.Id}");
-                            _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
-                            break;
-                        case MarketOrderResponseModel theMarketOrderResponse:
-                            _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
-                            _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
-                            break;
-                        case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
-                            _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
-                            _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
-                            break;
-                    }
+                    case TheResponseModel theResponse:
+                        _logger?.Add($"Response ProcessId: {theResponse.ProcessId}");
+                        _tasksManager.SetResult(theResponse.ProcessId, theResponse);
+                        break;
+                    case TheNewResponseModel theNewResponse:
+                        _logger?.Add($"Response Id: {theNewResponse.Id}");
+                        _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
+                        break;
+                    case MarketOrderResponseModel theMarketOrderResponse:
+                        _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
+                        _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
+                        break;
+                    case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
+                        _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
+                        _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
+                        break;
                 }
-                catch (KeyNotFoundException exception)
+            }
+            catch (KeyNotFoundException exception)
+            {
+                if (_ignoreErrors)
                 {
-                    if (_ignoreErrors)
-                    {
-                        _logger?.Add($"Response: {data.ToJson()}");
-                        _logger?.Add(exception.ToString());
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    _logger?.Add($"Response: {data.ToJson()}");
+                    _logger?.Add(exception.ToString());
                 }
-            });
+                else
+                {
+                    throw;
+                }
+            }
         }
 
-        public Func<object, Task<bool>> SendDataToSocket { get; set; }
+        public Func<object, CancellationToken, Task<bool>> SendDataToSocket { get; set; }
         public string ContextName => "TcpSocket";
         public object GetPingData()
         {

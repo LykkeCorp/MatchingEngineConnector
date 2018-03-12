@@ -51,10 +51,9 @@ namespace Lykke.MatchingEngine.Connector.Services
 
                     using (var connection = await Connect())
                     {
-                        await Task.WhenAny(
-                            connection.StartReadData(),
-                            SocketPingProcess(connection)
-                            );
+                        var readTask = Task.Factory.StartNew(connection.StartReadData, TaskCreationOptions.LongRunning).Unwrap();
+                        var pingTask = Task.Factory.StartNew(() => SocketPingProcess(connection), TaskCreationOptions.LongRunning).Unwrap();
+                        await Task.WhenAny(readTask, pingTask);
                     }
 
                 }
@@ -122,16 +121,15 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     await Task.Delay(500);
 
-                    if ((DateTime.UtcNow - SocketStatistic.LastRecieveTime).TotalSeconds > PingInterval * 2)
+                    if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > PingInterval * 2)
                     {
                         _log?.Add("Long time [" + PingInterval * 2 + "] no receive activity. Disconnect...");
                         await connection.Disconnect();
                     }
-                    else
-                        if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
+                    else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
                     {
                         var pingData = _service.GetPingData();
-                        await connection.SendDataToSocket(pingData);
+                        await connection.SendDataToSocket(pingData, CancellationToken.None);
                         lastSendPingTime = DateTime.UtcNow;
                     }
                 }

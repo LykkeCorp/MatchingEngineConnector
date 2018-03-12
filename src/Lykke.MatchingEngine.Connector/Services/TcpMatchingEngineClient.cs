@@ -71,7 +71,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 assetId);
             try
             {
-                await _tcpOrderSocketService.SendDataToSocket(model);
+                await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken);
 
                 await resultTask;
             }
@@ -107,7 +107,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 assetId);
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
@@ -163,7 +163,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{assetId} with acc {accuracy} and fee type {feeSizeType}");
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -222,7 +222,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{assetId} with acc {accuracy} and fee size % {feeSizePercentage}");
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -270,7 +270,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"From {assetId1} to {assetId2}");
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -303,7 +303,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{model.OrderAction} {model.AssetPairId}");
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel))
+                if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -336,7 +336,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 null);
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -385,7 +385,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{orderAction} {assetPairId}");
             try
             {
-                await _tcpOrderSocketService.SendDataToSocket(model);
+                await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken);
 
                 var result = await resultTask;
                 return result.RecordId;
@@ -414,7 +414,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{model.OrderAction} {model.AssetPairId}");
             try
             {
-                await _tcpOrderSocketService.SendDataToSocket(marketOrderModel);
+                await _tcpOrderSocketService.SendDataToSocket(marketOrderModel, cancellationToken);
 
                 var result = await resultTask;
                 return new MarketOrderResponse
@@ -446,7 +446,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 model.AssetId);
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel))
+                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel, cancellationToken))
                 {
                     _multiLimitOrderTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
@@ -479,7 +479,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 $"{model.AssetPairId} IsBuy={model.IsBuy}");
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderCancelModel))
+                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderCancelModel, cancellationToken))
                 {
                     _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
