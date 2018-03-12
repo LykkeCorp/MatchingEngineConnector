@@ -6,7 +6,7 @@ using Lykke.MatchingEngine.Connector.Abstractions.Services;
 
 namespace Lykke.MatchingEngine.Connector.Tools
 {
-    public class Connections
+    internal class Connections
     {
         private readonly Dictionary<int, TcpConnection> _sockets = new Dictionary<int, TcpConnection>();
 

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models;
@@ -8,16 +7,13 @@ using Lykke.MatchingEngine.Connector.Helpers;
 
 namespace Lykke.MatchingEngine.Connector.Tools
 {
-    /// <summary>
-    /// Class wich reads data during established connection 
-    /// </summary>
-    public class TcpConnection
+    internal sealed class TcpConnection : IDisposable
     {
         private readonly ITcpSerializer _tcpSerializer;
         private readonly TcpClient _socket;
         private readonly SocketStatistic _socketStatistic;
         private readonly ISocketLog _log;
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
+        private readonly object _disconnectLock = new object();
 
         internal Action<TcpConnection> DisconnectAction;
 
@@ -47,9 +43,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
         public async Task StartReadData()
         {
-            var socketNotifier = TcpService as ISocketNotifyer;
-            if (socketNotifier != null)
+            if (TcpService is ISocketNotifier socketNotifier)
+            {
                 await socketNotifier.Connect();
+            }
 
             await ReadThread();
         }
@@ -61,15 +58,11 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 // Вычитаем состояние дисконнект в одном потоке и сменим состояние в Disconnect=true
                 bool disconnected;
 
-                await _lock.WaitAsync();
-                try
+
+                lock (_disconnectLock)
                 {
                     disconnected = Disconnected;
                     Disconnected = true;
-                }
-                finally
-                {
-                    _lock.Release();
                 }
 
                 // Если вычитанное состояние не было дисконнект- почистим все что необхдимо почистить
@@ -83,9 +76,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
                     _log?.Add("Disconnected[" + Id + "]");
 
-                    var socketNotifier = TcpService as ISocketNotifyer;
-                    if (socketNotifier != null)
+                    if (TcpService is ISocketNotifier socketNotifier)
+                    {
                         await socketNotifier.Disconnect();
+                    }
 
                     (TcpService as IDisposable)?.Dispose();
                 }
@@ -144,6 +138,11 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 _log?.Add($"Error ReadData [{Id}]: {exception}");
                 TelemetryHelper.SubmitException(exception);
             }
+        }
+
+        public void Dispose()
+        {
+            _socket?.Dispose();
         }
     }
 }

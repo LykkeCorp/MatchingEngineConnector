@@ -2,13 +2,13 @@
 
   
   <PropertyGroup>
-    <TargetFramework>netstandard1.6</TargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Lykke.MatchingEngineConnector</PackageId>
     <Version>1.0.1</Version>
     <Authors>Lykke</Authors>
     <Company>Lykke</Company>
     <Description></Description>
-    <Copyright>@2017 - Lykke</Copyright>
+    <Copyright>@2018 - Lykke</Copyright>
     <PackageLicenseUrl>https://github.com/LykkeCity/MatchingEngineConnector/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/LykkeCity/MatchingEngineConnector</PackageProjectUrl>
     <RepositoryUrl>https://github.com/LykkeCity/MatchingEngineConnector.git</RepositoryUrl>
@@ -19,17 +19,31 @@
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
 
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Lykke.MatchingEngine.Connector.Abstractions\Lykke.MatchingEngine.Connector.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.6.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.5.1" />
-    <PackageReference Include="protobuf-net" Version="2.2.1" />
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="1.1.2" />
-    <PackageReference Include="Lykke.Common" Version="1.1.73" />
-    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="protobuf-net" Version="2.3.7" />
+    <PackageReference Include="Lykke.Common" Version="5.0.0" />
+    <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.0" PrivateAssets="All" />
+  </ItemGroup>
+
+  <ItemGroup Label="dotnet pack instructions">
+    <Content Include="$(OutputPath)$(AssemblyName).pdb">
+      <Pack>true</Pack>
+      <PackagePath>lib/netstandard2.0</PackagePath>
+    </Content>
   </ItemGroup>
 
 </Project>

@@ -15,16 +15,15 @@ namespace Lykke.MatchingEngine.Connector.Services
     public class TcpMatchingEngineClient : IMatchingEngineClient
     {
         private readonly TimeSpan _defaultReconnectTimeOut = TimeSpan.FromSeconds(3);
-        private readonly TasksManager<long, TheResponseModel> _tasksManager =
-            new TasksManager<long, TheResponseModel>();
-        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager =
-            new TasksManager<string, TheNewResponseModel>();
-        private readonly TasksManager<string, MarketOrderResponseModel> _marketOrderTasksManager =
-            new TasksManager<string, MarketOrderResponseModel>();
-        private readonly TasksManager<string, MeMultiLimitOrderResponseModel> _multiLimitOrderTasksManager =
-            new TasksManager<string, MeMultiLimitOrderResponseModel>();
+        private readonly TasksManager<TheResponseModel> _tasksManager =
+            new TasksManager<TheResponseModel>();
+        private readonly TasksManager<TheNewResponseModel> _newTasksManager =
+            new TasksManager<TheNewResponseModel>();
+        private readonly TasksManager<MarketOrderResponseModel> _marketOrderTasksManager =
+            new TasksManager<MarketOrderResponseModel>();
+        private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiLimitOrderTasksManager =
+            new TasksManager<MeMultiLimitOrderResponseModel>();
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
-        private readonly SemaphoreSlim _lock = new SemaphoreSlim(1, 1);
 
         private long _currentNumber = 1;
         private TcpOrderSocketService _tcpOrderSocketService;
@@ -56,14 +55,15 @@ namespace Lykke.MatchingEngine.Connector.Services
             string id,
             string clientId,
             string assetId,
-            double value)
+            double value,
+            CancellationToken cancellationToken = default)
         {
             var model = MeNewUpdateBalanceModel.Create(
                 id,
                 clientId,
                 assetId,
                 value);
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(UpdateBalanceAsync),
@@ -90,7 +90,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             string id,
             string clientId,
             string assetId,
-            double amount)
+            double amount,
+            CancellationToken cancellationToken = default)
         {
             var model = MeNewCashInOutModel.Create(
                 id,
@@ -98,7 +99,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 assetId,
                 amount);
 
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CashInOutAsync),
@@ -135,7 +136,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             double amount,
             string feeClientId,
             double feeSize,
-            FeeSizeType feeSizeType)
+            FeeSizeType feeSizeType,
+            CancellationToken cancellationToken = default)
         {
             var fee = Fee.GenerateCashInOutFee(
                 amount,
@@ -153,7 +155,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 amountWithFee,
                 fee?.ToApiModel());
 
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CashInOutAsync),
@@ -163,7 +165,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -192,7 +194,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             double amount,
             string feeClientId,
             double feeSizePercentage,
-            double overdraft)
+            double overdraft,
+            CancellationToken cancellationToken = default)
         {
             var fee = Fee.GenerateTransferFee(
                 amount,
@@ -211,7 +214,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 fee?.ToApiModel(),
                 overdraft);
 
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(TransferAsync),
@@ -221,7 +224,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -248,7 +251,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             double amount1,
             string clientId2,
             string assetId2,
-            double amount2)
+            double amount2,
+            CancellationToken cancellationToken = default)
         {
             var model = MeNewSwapModel.Create(
                 id,
@@ -258,7 +262,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 clientId2,
                 assetId2,
                 amount2);
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(SwapAsync),
@@ -268,7 +272,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -288,10 +292,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
-        public async Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model)
+        public async Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default)
         {
             var limitOrderModel = model.ToNewMeModel();
-            var resultTask = _newTasksManager.Add(limitOrderModel.Id);
+            var resultTask = _newTasksManager.Add(limitOrderModel.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(PlaceLimitOrderAsync),
@@ -301,7 +305,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -321,10 +325,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
-        public async Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId)
+        public async Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId, CancellationToken cancellationToken = default)
         {
             var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), limitOrderId);
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CancelLimitOrderAsync),
@@ -334,7 +338,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -360,9 +364,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             OrderAction orderAction,
             double volume,
             bool straight,
-            double? reservedLimitVolume = null)
+            double? reservedLimitVolume = null,
+            CancellationToken cancellationToken = default)
         {
-            var id = await GetNextRequestIdAsync();
+            var id = GetNextRequestId();
 
             var model = MeMarketOrderObsoleteModel.Create(
                 id,
@@ -372,7 +377,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 volume,
                 straight,
                 reservedLimitVolume);
-            var resultTask = _tasksManager.Add(model.Id);
+            var resultTask = _tasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(HandleMarketOrderAsync),
@@ -397,11 +402,11 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
-        public async Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model)
+        public async Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model, CancellationToken cancellationToken = default)
         {
             var marketOrderModel = model.ToMeModel();
 
-            var resultTask = _marketOrderTasksManager.Add(marketOrderModel.Id);
+            var resultTask = _marketOrderTasksManager.Add(marketOrderModel.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 "HandleMarketOrderAsync from model",
@@ -430,10 +435,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
-        public async Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model)
+        public async Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model, CancellationToken cancellationToken = default)
         {
             var multiLimitOrderModel = model.ToMeModel();
-            var resultTask = _multiLimitOrderTasksManager.Add(model.Id);
+            var resultTask = _multiLimitOrderTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(PlaceMultiLimitOrderAsync),
@@ -443,7 +448,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel))
                 {
-                    _multiLimitOrderTasksManager.Compliete(model.Id, null);
+                    _multiLimitOrderTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -463,10 +468,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
-        public async Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model)
+        public async Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model, CancellationToken cancellationToken = default)
         {
             var multiLimitOrderCancelModel = model.ToMeModel();
-            var resultTask = _newTasksManager.Add(model.Id);
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CancelMultiLimitOrderAsync),
@@ -476,7 +481,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderCancelModel))
                 {
-                    _newTasksManager.Compliete(model.Id, null);
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
@@ -501,17 +506,9 @@ namespace Lykke.MatchingEngine.Connector.Services
             _clientTcpSocket.Start();
         }
 
-        private async Task<long> GetNextRequestIdAsync()
+        private long GetNextRequestId()
         {
-            await _lock.WaitAsync();
-            try
-            {
-                return _currentNumber++;
-            }
-            finally
-            {
-                _lock.Release();
-            }
+            return Interlocked.Increment(ref _currentNumber);
         }
     }
 }
