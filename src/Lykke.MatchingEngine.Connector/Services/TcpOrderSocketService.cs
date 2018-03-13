@@ -54,6 +54,8 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
+                    default:
+                        throw new ArgumentException(nameof(data), $"{data.GetType().Name} is not mapped. Please check the mapping in the MatchingEngineSerializer class");
                 }
             }
             catch (KeyNotFoundException exception)
