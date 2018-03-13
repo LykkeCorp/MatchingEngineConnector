@@ -55,13 +55,23 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
                     // No handlers for the following messages
-                    case MePingModel m0: 
+                    case MePingModel m0:
                     case MeCashInOutModel m1:
                     case MeLimitOrderModel m2:
-                    case MeLimitOrderCancelModel m3:
-                    case MeUpdateBalanceModel m4:
-                    case MeUpdateWalletCredsModel m5:
-                    case MeNewMarketOrderModel m6:
+                    case MeMarketOrderObsoleteModel m3:
+                    case MeLimitOrderCancelModel m4:
+                    case MeUpdateBalanceModel m5:
+                    case MeNewTransferModel m6:
+                    case MeNewCashInOutModel m7:
+                    case MeNewSwapModel m8:
+                    case MeUpdateWalletCredsModel m9:
+                    case MeNewLimitOrderModel m10:
+                    case MeNewLimitOrderCancelModel m11:
+                    case MeNewMarketOrderModel m12:
+                    case MeMarketOrderModel m13:
+                    case MeNewUpdateBalanceModel m14:
+                    case MeMultiLimitOrderModel m15:
+                    case MeMultiLimitOrderCancelModel m16:
                         break;
                     default:
                         throw new ArgumentException(nameof(data), $"{data.GetType().Name} is not mapped. Please check the mapping in the MatchingEngineSerializer class");
