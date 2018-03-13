@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
@@ -20,12 +21,14 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="clientId">Id of the client</param>
         /// <param name="assetId">Id of the asset</param>
         /// <param name="value">New balance value</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
         Task UpdateBalanceAsync(
             string id,
             string clientId,
             string assetId,
-            double value);
+            double value,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cash In or Out some amount of an asset
@@ -34,12 +37,14 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="clientId">Client id</param>
         /// <param name="assetId">Asset id</param>
         /// <param name="amount">Amount to be cashed in or out</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> CashInOutAsync(
             string id,
             string clientId,
             string assetId,
-            double amount);
+            double amount,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cash In or Out some amount of an asset
@@ -52,6 +57,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="feeClientId">Fee client id</param>
         /// <param name="feeSize">Size of fee (0.01 = 1%, 1.0 = 100%)</param>
         /// <param name="feeSizeType">Type of fee size (PERCENTAGE or ABSOLUTE)</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> CashInOutAsync(
             string id,
@@ -61,7 +67,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             double amount,
             string feeClientId,
             double feeSize,
-            FeeSizeType feeSizeType);
+            FeeSizeType feeSizeType,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Transfer some amount of an asset, from one client to another
@@ -74,6 +81,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="amount">Amount to be transfered</param>
         /// <param name="feeClientId">Fee client id</param>
         /// <param name="feeSizePercentage">Fee amount (1.0 is 100%, 0.01 is 1%)</param>
+        /// <param name="overdraft"></param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> TransferAsync(
             string id,
@@ -84,7 +93,8 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             double amount,
             string feeClientId,
             double feeSizePercentage,
-            double overdraft);
+            double overdraft,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Swap some assets between clients
@@ -96,6 +106,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="clientId2">Second client id</param>
         /// <param name="assetId2">Second asset id</param>
         /// <param name="amount2">Second amount</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Status code and message</returns>
         Task<MeResponseModel> SwapAsync(
             string id,
@@ -104,27 +115,24 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             double amount1,
             string clientId2,
             string assetId2,
-            double amount2);
+            double amount2,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Place a limit order on the matching engine
         /// </summary>
-        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
-        /// <param name="clientId">Id of the client</param>
-        /// <param name="assetPairId">Id of the Asset Pair</param>
-        /// <param name="orderAction">Type of Order action (buy/sell)</param>
-        /// <param name="volume">Amount of base asset (to buy or sell)</param>
-        /// <param name="price">Price for base asset in quoting asset</param>
-        /// <param name="cancelPreviousOrders">Cancels all previous limit orders of the client</param>
+        /// <param name="model">A limit order</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
-        Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model);
+        Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cancel previously placed Limit order
         /// </summary>
         /// <param name="limitOrderId">id of the limit order to be canceled</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
-        Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId);
+        Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Handles market order, Matches with limit order if available
@@ -135,6 +143,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="volume">Amount of base asset (to buy or sell)</param>
         /// <param name="straight"></param>
         /// <param name="reservedLimitVolume"></param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
         Task<string> HandleMarketOrderAsync(
             string clientId,
@@ -142,25 +151,30 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             OrderAction orderAction,
             double volume,
             bool straight,
-            double? reservedLimitVolume = null);
+            double? reservedLimitVolume = null,
+            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Handles market order, Matches with limit order if available
+        /// <param name="model">A market order</param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// </summary>
-        Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model);
+        Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Place multiple limit orders
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
-        Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model);
+        Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Cancel multiple limit orders
         /// </summary>
         /// <param name="model"></param>
+        /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
-        Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model);
+        Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model, CancellationToken cancellationToken = default);
     }
 }

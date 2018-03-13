@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
@@ -14,13 +15,13 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// вызывается этот метод, в котором мы обрабатываем полученные данные
         /// </summary>
         /// <param name="data">данные, которые получил сокет и распарсил биндер</param>
-        Task HandleDataFromSocket(object data);
+        void HandleDataFromSocket(object data);
 
         /// <summary>
         /// Метод, с помощью которого мы отправляем данные в сокет
         /// </summary>
 
-        Func<object, Task<bool>> SendDataToSocket { get; set; }
+        Func<object, CancellationToken, Task<bool>> SendDataToSocket { get; set; }
 
         /// <summary>
         /// Имя контекста сокета (для логирования)

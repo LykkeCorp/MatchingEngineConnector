@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -50,14 +49,12 @@ namespace Lykke.MatchingEngine.Connector.Services
                 try
                 {
 
-                    // Пытаемся создать соединение с сервером
-                    var connection = await Connect();
-
-                    // Запускаем процесс чтения данных в другом потоке
-                    await Task.WhenAny(
-                        connection.StartReadData(),
-                        SocketPingProcess(connection)
-                        );
+                    using (var connection = await Connect())
+                    {
+                        var readTask = Task.Factory.StartNew(connection.StartReadData, TaskCreationOptions.LongRunning).Unwrap();
+                        var pingTask = Task.Factory.StartNew(() => SocketPingProcess(connection), TaskCreationOptions.LongRunning).Unwrap();
+                        await Task.WhenAny(readTask, pingTask);
+                    }
 
                 }
                 catch (SocketException se)
@@ -91,13 +88,20 @@ namespace Lykke.MatchingEngine.Connector.Services
             return _service;
         }
 
-        // Метод, который пытается сделать соединение с сервером
         private async Task<TcpConnection> Connect()
         {
             _log?.Add("Attempt To Connect:" + _ipEndPoint.Address + ":" + _ipEndPoint.Port);
 
             var tcpClient = new TcpClient { NoDelay = true };
-            await tcpClient.ConnectAsync(_ipEndPoint.Address, _ipEndPoint.Port);
+            try
+            {
+                await tcpClient.ConnectAsync(_ipEndPoint.Address, _ipEndPoint.Port);
+            }
+            catch (Exception)
+            {
+                tcpClient.Dispose();
+                throw;
+            }
             _service = _srvFactory();
             SocketStatistic.Init();
             var tcpSerializer = new TTcpSerializer();
@@ -117,19 +121,15 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     await Task.Delay(500);
 
-                    if ((DateTime.UtcNow - SocketStatistic.LastRecieveTime).TotalSeconds > PingInterval * 2)
+                    if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > PingInterval * 2)
                     {
-                        Debug.WriteLine("Disconnect becouse of Ping");
-                        Console.WriteLine("TCP SOCKET: No recieve activity. Disconnect...");
-                        _log?.Add("Long time [" + PingInterval * 2 + "] no recieve activity. Disconnect...");
+                        _log?.Add("Long time [" + PingInterval * 2 + "] no receive activity. Disconnect...");
                         await connection.Disconnect();
                     }
-                    else
-                        if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
+                    else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
                     {
                         var pingData = _service.GetPingData();
-                        //Console.WriteLine("Send Ping from Client");
-                        await connection.SendDataToSocket(pingData);
+                        await connection.SendDataToSocket(pingData, CancellationToken.None);
                         lastSendPingTime = DateTime.UtcNow;
                     }
                 }

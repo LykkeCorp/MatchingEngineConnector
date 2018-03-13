@@ -1,5 +1,4 @@
-﻿using Common;
-using Lykke.MatchingEngine.Connector.Abstractions.Models;
+﻿using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using ProtoBuf;
 
 namespace Lykke.MatchingEngine.Connector.Models

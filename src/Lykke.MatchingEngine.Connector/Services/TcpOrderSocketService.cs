@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
@@ -7,19 +8,19 @@ using Lykke.MatchingEngine.Connector.Models;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
-    internal class TcpOrderSocketService : ITcpClientService, ISocketNotifyer
+    internal class TcpOrderSocketService : ITcpClientService, ISocketNotifier
     {
-        private readonly TasksManager<long, TheResponseModel> _tasksManager;
-        private readonly TasksManager<string, TheNewResponseModel> _newTasksManager;
-        private readonly TasksManager<string, MarketOrderResponseModel> _marketOrdersTasksManager;
-        private readonly TasksManager<string, MeMultiLimitOrderResponseModel> _multiOrdersTasksManager;
+        private readonly TasksManager<TheResponseModel> _tasksManager;
+        private readonly TasksManager<TheNewResponseModel> _newTasksManager;
+        private readonly TasksManager<MarketOrderResponseModel> _marketOrdersTasksManager;
+        private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiOrdersTasksManager;
         private readonly ISocketLog _logger;
         private readonly bool _ignoreErrors;
 
-        public TcpOrderSocketService(TasksManager<long, TheResponseModel> tasksManager,
-            TasksManager<string, TheNewResponseModel> newTasksManager,
-            TasksManager<string, MarketOrderResponseModel> marketOrdersTasksManager,
-            TasksManager<string, MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
+        public TcpOrderSocketService(TasksManager<TheResponseModel> tasksManager,
+            TasksManager<TheNewResponseModel> newTasksManager,
+            TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
+            TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
             ISocketLog logger = null,
             bool ignoreErrors = false)
         {
@@ -31,57 +32,47 @@ namespace Lykke.MatchingEngine.Connector.Services
             _ignoreErrors = ignoreErrors;
         }
 
-        public async Task HandleDataFromSocket(object data)
+        public void HandleDataFromSocket(object data)
         {
-            await Task.Run(() =>
+            try
             {
-                try
+                switch (data)
                 {
-                    var theResponse = data as TheResponseModel;
-                    if (theResponse != null)
-                    {
+                    case TheResponseModel theResponse:
                         _logger?.Add($"Response ProcessId: {theResponse.ProcessId}");
-                        _tasksManager.Compliete(theResponse.ProcessId, theResponse);
-                        return;
-                    }
-
-                    var theNewResponse = data as TheNewResponseModel;
-                    if (theNewResponse != null)
-                    {
+                        _tasksManager.SetResult(theResponse.ProcessId, theResponse);
+                        break;
+                    case TheNewResponseModel theNewResponse:
                         _logger?.Add($"Response Id: {theNewResponse.Id}");
-                        _newTasksManager.Compliete(theNewResponse.Id, theNewResponse);
-                    }
-
-                    var theMarketOrderResponse = data as MarketOrderResponseModel;
-                    if (theMarketOrderResponse != null)
-                    {
+                        _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
+                        break;
+                    case MarketOrderResponseModel theMarketOrderResponse:
                         _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
-                        _marketOrdersTasksManager.Compliete(theMarketOrderResponse.Id, theMarketOrderResponse);
-                    }
-
-                    var multiLimitOrderResponse = data as MeMultiLimitOrderResponseModel;
-                    if (multiLimitOrderResponse != null)
-                    {
+                        _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
+                        break;
+                    case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
                         _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
-                        _multiOrdersTasksManager.Compliete(multiLimitOrderResponse.Id, multiLimitOrderResponse);
-                    }
+                        _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
+                        break;
+                    default:
+                        throw new ArgumentException(nameof(data), $"{data.GetType().Name} is not mapped. Please check the mapping in the MatchingEngineSerializer class");
                 }
-                catch (KeyNotFoundException exception)
+            }
+            catch (KeyNotFoundException exception)
+            {
+                if (_ignoreErrors)
                 {
-                    if (_ignoreErrors)
-                    {
-                        _logger?.Add($"Response: {data.ToJson()}");
-                        _logger?.Add(exception.ToString());
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    _logger?.Add($"Response: {data.ToJson()}");
+                    _logger?.Add(exception.ToString());
                 }
-            });
+                else
+                {
+                    throw;
+                }
+            }
         }
 
-        public Func<object, Task<bool>> SendDataToSocket { get; set; }
+        public Func<object, CancellationToken, Task<bool>> SendDataToSocket { get; set; }
         public string ContextName => "TcpSocket";
         public object GetPingData()
         {
@@ -90,7 +81,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public Task Connect()
         {
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
 
         public Task Disconnect()
@@ -99,7 +90,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _newTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             _marketOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
             _multiOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
-            return Task.FromResult(0);
+            return Task.CompletedTask;
         }
     }
 }
