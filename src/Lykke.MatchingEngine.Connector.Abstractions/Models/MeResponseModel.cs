@@ -17,6 +17,7 @@
         LeadToNegativeSpread = 417,
         TooSmallVolume = 418,
         InvalidFee = 419,
+        InvalidPrice = 420,
         Duplicate = 430,
         //ME errors        
         Runtime = 500
