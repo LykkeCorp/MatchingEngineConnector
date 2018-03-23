@@ -244,6 +244,61 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
         }
 
+        public async Task<MeResponseModel> TransferWithFeeAsync(
+            string id,
+            string fromClientId,
+            string toClientId,
+            string assetId,
+            int accuracy,
+            double amount,
+            FeeModel feeModel,
+            double overdraft,
+            CancellationToken cancellationToken = default)
+        {
+            var fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
+
+            var amountWithFee = fee?.Apply(amount) ?? amount;
+
+            var model = MeNewTransferModel.Create(
+                id,
+                fromClientId,
+                toClientId,
+                assetId,
+                amountWithFee,
+                fee.ToApiModel(),
+                overdraft);
+
+            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
+
+            string telemetryFeeSiteType = fee.SizeType == FeeSizeType.PERCENTAGE ? "%" : "abs";
+            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
+                nameof(TransferWithFeeAsync),
+                id,
+                $"{assetId} with acc {accuracy} and fee size {telemetryFeeSiteType} {fee.Size}");
+            try
+            {
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
+                {
+                    _newTasksManager.SetResult(model.Id, null);
+                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
+                    return null;
+                }
+
+                var result = await resultTask;
+                return result.ToDomainModel();
+            }
+            catch (Exception ex)
+            {
+                TelemetryHelper.SubmitException(ex);
+                TelemetryHelper.SubmitOperationFail(telemetryOperation);
+                throw;
+            }
+            finally
+            {
+                TelemetryHelper.SubmitOperationResult(telemetryOperation);
+            }
+        }
+
         public async Task<MeResponseModel> SwapAsync(
             string id,
             string clientId1,

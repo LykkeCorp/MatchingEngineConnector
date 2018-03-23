@@ -97,6 +97,32 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Transfer some amount of an asset, from one client to another
+        /// </summary>
+        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
+        /// <param name="fromClientId">Source client id</param>
+        /// <param name="toClientId">Target client id</param>
+        /// <param name="assetId">Asset id</param>
+        /// <param name="accuracy">Asset accuracy</param>
+        /// <param name="amount">Amount to be transfered</param>
+        /// <param name="feeModel">Fee info</param>
+        /// <param name="overdraft"></param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        /// <returns>Status code and message</returns>
+        Task<MeResponseModel> TransferWithFeeAsync(
+            string id,
+            string fromClientId,
+            string toClientId,
+            string assetId,
+            int accuracy,
+            double amount,
+            FeeModel fee,
+            double overdraft,
+            CancellationToken cancellationToken = default);
+
+
+
+        /// <summary>
         /// Swap some assets between clients
         /// </summary>
         /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
