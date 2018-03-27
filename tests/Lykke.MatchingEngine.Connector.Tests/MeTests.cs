@@ -51,7 +51,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
         [Fact(Skip = "Manual testing")]
         public async Task WithdrawalFeeTest()
         {
-            var url = "me.lykke-me.svc.cluster.local";
+            var url = "";
             var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888));
             client.Start();
 
@@ -64,7 +64,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
             };
 
 
-            var result = await client.TransferAsync(Guid.NewGuid().ToString(), "e3fa1d1e-8e7a-44e0-a666-a442bc35515c", "", "USD", 2, 14, fee, 0);
+            var result = await client.TransferAsync(Guid.NewGuid().ToString(), "", "", "USD", 2, 14, fee, 0);
 
         }
 
