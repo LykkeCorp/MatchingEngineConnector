@@ -192,16 +192,15 @@ namespace Lykke.MatchingEngine.Connector.Services
             string assetId,
             int accuracy,
             double amount,
-            string feeClientId,
-            double feeSizePercentage,
+            FeeModel feeModel,
             double overdraft,
             CancellationToken cancellationToken = default)
         {
-            var fee = Fee.GenerateTransferFee(
-                amount,
-                accuracy,
-                feeClientId,
-                feeSizePercentage);
+            Fee fee = null;
+            if (feeModel != null)
+            {
+                fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
+            }
 
             var amountWithFee = fee?.Apply(amount) ?? amount;
 
@@ -216,10 +215,11 @@ namespace Lykke.MatchingEngine.Connector.Services
 
             var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
+            string telemetryFeeSiteType = fee == null ? "" : fee.SizeType == FeeSizeType.PERCENTAGE ? " %" : " abs";
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(TransferAsync),
                 id,
-                $"{assetId} with acc {accuracy} and fee size % {feeSizePercentage}");
+                $"{assetId} with acc {accuracy} and fee size{telemetryFeeSiteType} {fee?.Size ?? 0}");
             try
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
