@@ -70,31 +70,6 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             FeeSizeType feeSizeType,
             CancellationToken cancellationToken = default);
 
-        /// <summary>
-        /// Transfer some amount of an asset, from one client to another
-        /// </summary>
-        /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>
-        /// <param name="fromClientId">Source client id</param>
-        /// <param name="toClientId">Target client id</param>
-        /// <param name="assetId">Asset id</param>
-        /// <param name="accuracy">Asset accuracy</param>
-        /// <param name="amount">Amount to be transfered</param>
-        /// <param name="feeClientId">Fee client id</param>
-        /// <param name="feeSizePercentage">Fee amount (1.0 is 100%, 0.01 is 1%)</param>
-        /// <param name="overdraft"></param>
-        /// <param name="cancellationToken">A cancellation token</param>
-        /// <returns>Status code and message</returns>
-        Task<MeResponseModel> TransferAsync(
-            string id,
-            string fromClientId,
-            string toClientId,
-            string assetId,
-            int accuracy,
-            double amount,
-            string feeClientId,
-            double feeSizePercentage,
-            double overdraft,
-            CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Transfer some amount of an asset, from one client to another
@@ -109,7 +84,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="overdraft"></param>
         /// <param name="cancellationToken">A cancellation token</param>
         /// <returns>Status code and message</returns>
-        Task<MeResponseModel> TransferWithFeeAsync(
+        Task<MeResponseModel> TransferAsync(
             string id,
             string fromClientId,
             string toClientId,
