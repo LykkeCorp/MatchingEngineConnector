@@ -1,4 +1,6 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
+﻿using System;
+
+namespace Lykke.MatchingEngine.Connector.Abstractions.Models
 {
     public class LimitOrderModel
     {
@@ -10,5 +12,6 @@
         public double Price { get; set; }
         public bool CancelPreviousOrders { get; set; }
         public LimitOrderFeeModel Fee { get; set; }
+        public LimitOrderFeeModel[] Fees { get; set; } = Array.Empty<LimitOrderFeeModel>();
     }
 }

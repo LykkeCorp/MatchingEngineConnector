@@ -30,10 +30,13 @@ namespace Lykke.MatchingEngine.Connector.Models
 
         [ProtoMember(8, IsRequired = false)]
         public MeLimitOrderFeeModel Fee { get; set; }
+        
+        [ProtoMember(9, IsRequired = false)]
+        public MeLimitOrderFeeModel[] Fees { get; set; }
 
         public static MeNewLimitOrderModel Create(string id,
             string clientId, string assetPairId, OrderAction orderAction,
-            double volume, double price, bool cancelAllPreviousLimitOrders, MeLimitOrderFeeModel fee)
+            double volume, double price, bool cancelAllPreviousLimitOrders, MeLimitOrderFeeModel fee, MeLimitOrderFeeModel[] fees)
         {
             return new MeNewLimitOrderModel
             {
@@ -44,7 +47,8 @@ namespace Lykke.MatchingEngine.Connector.Models
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
                 Price = price,
                 CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders,
-                Fee = fee
+                Fee = fee,
+                Fees = fees
             };
         }
     }

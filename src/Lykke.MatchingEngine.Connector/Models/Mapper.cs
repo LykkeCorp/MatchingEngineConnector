@@ -19,7 +19,7 @@ namespace Lykke.MatchingEngine.Connector.Models
         public static MeNewLimitOrderModel ToNewMeModel(this LimitOrderModel model)
         {
             return MeNewLimitOrderModel.Create(model.Id, model.ClientId, model.AssetPairId, model.OrderAction,
-                model.Volume, model.Price, model.CancelPreviousOrders, model.Fee?.ToMeModel());
+                model.Volume, model.Price, model.CancelPreviousOrders, model.Fee?.ToMeModel(), model.Fees?.Select(item => item.ToMeModel()).ToArray());
         }
 
         public static MeLimitOrderFeeModel ToMeModel(this LimitOrderFeeModel model)
