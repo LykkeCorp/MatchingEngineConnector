@@ -30,7 +30,14 @@ namespace Lykke.MatchingEngine.Connector.Domain
 
         public double Apply(double sourceAmount)
         {
-            return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+            if (Type == FeeType.EXTERNAL_FEE)
+            {
+                return sourceAmount;
+            }
+            else
+            {
+                return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+            }
         }
 
         public static Fee GenerateCashInOutFee(double amount, int accuracy, string clientId, double feeSize = 0d,
