@@ -341,7 +341,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CancelLimitOrdersAsync),
-                idsToCancel.First(),
+                idsToCancel.FirstOrDefault(),
                 string.Join(", ", idsToCancel));
             try
             {
