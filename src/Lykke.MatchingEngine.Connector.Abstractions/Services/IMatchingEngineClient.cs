@@ -136,6 +136,14 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Cancel previously placed Limit orders
+        /// </summary>
+        /// <param name="limitOrderId">id list of the limit orders to be canceled</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        /// <returns></returns>
+        Task<MeResponseModel> CancelLimitOrdersAsync(string[] limitOrderId, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Handles market order, Matches with limit order if available
         /// </summary>
         /// <param name="clientId">id of the client</param>
@@ -177,5 +185,15 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
         Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// Cancels limit orders
+        /// </summary>
+        /// <param name="model"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        Task<MeResponseModel> MassCancelLimitOrdersAsync(
+            LimitOrderMassCancelModel model,
+            CancellationToken cancellationToken = default);
     }
 }

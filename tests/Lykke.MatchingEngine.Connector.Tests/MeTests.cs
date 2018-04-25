@@ -1,8 +1,10 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
+using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Services;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,6 +13,9 @@ namespace Lykke.MatchingEngine.Connector.Tests
 {
     public class MeTests
     {
+        private const string Url = "";
+        private const string ClientId = "";
+
         private readonly ITestOutputHelper _log;
 
         public MeTests(ITestOutputHelper log)
@@ -68,5 +73,214 @@ namespace Lykke.MatchingEngine.Connector.Tests
 
         }
 
+        /// <summary>
+        /// When OldUid is specified and there are no orders with such Ids then Placing returns error
+        /// </summary>
+        /// <returns></returns>
+        [Fact(Skip = "Manual testing")]
+        public async Task PlacingMultiLimitOrderDoesNotReplaceNotExistingOrders()
+        {
+            var client = CreateConnection(Url);
+
+            // Try to replace not existing orders
+
+            var multiOrder = CreateMultiOrder(ClientId, "LKKCHF", buyPrices: new[] {0.1, 0.2}, oldId: new[] {GenerateUid(), GenerateUid()});
+
+            var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.NotFoundPrevious));
+        }
+
+        /// <summary>
+        /// When OldUid is specified, new orders replace old orders
+        /// </summary>
+        /// <returns></returns>
+        [Fact(Skip = "Manual testing")]
+        public async Task PlacingMultiLimitOrderReplacesSpecifiedOrders()
+        {
+            const string assetPairId = "LKKCHF";
+
+            var client = CreateConnection(Url);
+
+            // Place orders
+
+            var multiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.1, 0.2 });
+
+            var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+
+            // Replace orders
+
+            var nextMultiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.3, 0.4 },
+                oldId: response.Statuses.Select(s => s.Id).ToArray());
+
+            response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(nextMultiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+
+            // Replace orders when cancel flag is false
+
+            var multiOrderNoReplace = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.1, 0.2 },
+                oldId: response.Statuses.Select(s => s.Id).Take(1).ToArray(), cancelPreviousOrders: false);
+
+            response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrderNoReplace));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+        }
+
+        [Fact(Skip = "Manual testing")]
+        public async Task MassCancelOrderTest()
+        {
+            const string assetPairId = "LKKCHF";
+
+            var client = CreateConnection(Url);
+
+            // Place orders
+
+            var multiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.1, 0.2 });
+
+            var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+
+            // Cancel all orders
+
+            var cancelResponse = await client.MassCancelLimitOrdersAsync(new LimitOrderMassCancelModel
+            {
+                ClientId = ClientId,
+                Id = GenerateUid(),
+                AssetPairId = assetPairId,
+                IsBuy = null
+            });
+
+            Assert.Equal(MeStatusCodes.Ok, cancelResponse.Status);
+
+            // Try to replace orders
+
+            var nextMultiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.3, 0.4 },
+                oldId: response.Statuses.Select(s => s.Id).ToArray());
+
+            response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(nextMultiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.NotFoundPrevious));
+        }
+
+        [Fact(Skip = "Manual testing")]
+        public async Task CancelLimitOrderTest()
+        {
+            const string assetPairId = "LKKCHF";
+
+            var client = CreateConnection(Url);
+
+            // Place orders
+
+            var multiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.1, 0.2 });
+
+            var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+
+            // Cancel all orders one by one
+
+            var tasks = multiOrder.Orders.Select(o => client.Retry(c => c.CancelLimitOrderAsync(o.Id))).ToList();
+            await Task.WhenAll(tasks);
+
+            foreach (var cancelResponse in tasks.Select(t => t.Result))
+            {
+                Assert.NotNull(cancelResponse);
+                Assert.Equal(MeStatusCodes.Ok, cancelResponse.Status);
+            }
+        }
+
+        [Fact(Skip = "Manual testing")]
+        public async Task CancelLimitOrdersTest()
+        {
+            const string assetPairId = "LKKCHF";
+
+            var client = CreateConnection(Url);
+
+            // Place orders
+
+            var multiOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.1, 0.2 });
+
+            var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
+
+            Assert.NotNull(response);
+            Assert.Equal(2, response.Statuses.Count);
+            Assert.True(response.Statuses.All(s => s.Status == MeStatusCodes.Ok));
+
+            // Cancel all orders one by one
+
+            var cancelResponse = await client.Retry(c => c.CancelLimitOrdersAsync(
+                multiOrder.Orders.Select(o => o.Id).ToArray()));
+
+            Assert.NotNull(cancelResponse);
+            Assert.Equal(MeStatusCodes.Ok, cancelResponse.Status);
+        }
+
+        private static MultiLimitOrderModel CreateMultiOrder(string clientId, string assetPairId, double[] buyPrices, string[] oldId = null,
+            bool cancelPreviousOrders = true)
+        {
+            if (string.IsNullOrEmpty(clientId))
+            {
+                throw new ArgumentNullException(nameof(clientId), "ClientId must be specified");
+            }
+
+            const int volume = 10;
+
+            var orderItems = buyPrices.Select((buyPrice, index) =>
+                new MultiOrderItemModel
+                {
+                    Id = GenerateUid(),
+                    OrderAction = OrderAction.Buy,
+                    Price = buyPrice,
+                    Volume = volume,
+                    OldId = oldId != null && oldId.Length > index ? oldId[index] : null
+                }).ToArray();
+
+            return new MultiLimitOrderModel
+            {
+                AssetId = assetPairId,
+                CancelPreviousOrders = cancelPreviousOrders,
+                ClientId = clientId,
+                Id = GenerateUid(),
+                CancelMode = CancelMode.NotEmptySide,
+                Orders = orderItems
+            };
+        }
+
+        private static string GenerateUid()
+        {
+            return Guid.NewGuid().ToString();
+        }
+
+        private static IMatchingEngineClient CreateConnection(string url)
+        {
+            if (string.IsNullOrEmpty(url))
+            {
+                throw new ArgumentNullException(nameof(url), "Url must be specified");
+            }
+
+            var client =
+                new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()),
+                    8888));
+            client.Start();
+            return client;
+        }
     }
 }

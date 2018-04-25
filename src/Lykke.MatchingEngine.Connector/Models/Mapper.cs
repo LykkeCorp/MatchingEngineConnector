@@ -33,13 +33,19 @@ namespace Lykke.MatchingEngine.Connector.Models
             return MeMultiLimitOrderModel.Create(
                 model.Id, model.ClientId, model.AssetId,
                 model.Orders.Select(m => MeMultiOrderItemModel.Create(
-                    m.Id, m.OrderAction, m.Volume, m.Price, m.Fee?.ToMeModel())).ToArray(),
-                model.CancelPreviousOrders);
+                    m.Id, m.OrderAction, m.Volume, m.Price, m.Fee?.ToMeModel(), m.OldId)).ToArray(),
+                model.CancelPreviousOrders,
+                model.CancelMode);
         }
 
         public static MeMultiLimitOrderCancelModel ToMeModel(this MultiLimitOrderCancelModel model)
         {
             return MeMultiLimitOrderCancelModel.Create(model.Id, model.ClientId, model.AssetPairId, model.IsBuy);
+        }
+
+        public static MeLimitOrderMassCancelModel ToMeModel(this LimitOrderMassCancelModel model)
+        {
+            return MeLimitOrderMassCancelModel.Create(model.Id, model.ClientId, model.AssetPairId, model.IsBuy);
         }
     }
 }

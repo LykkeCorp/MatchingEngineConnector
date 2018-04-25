@@ -5,6 +5,7 @@
         Ok = 0,
 
         //validation errors
+        BadRequest = 400,
         LowBalance = 401,
         AlreadyProcessed = 402,
         UnknownAsset = 410,
@@ -18,7 +19,10 @@
         TooSmallVolume = 418,
         InvalidFee = 419,
         InvalidPrice = 420,
+        Replaced = 421,
+        NotFoundPrevious = 422,
         Duplicate = 430,
+
         //ME errors        
         Runtime = 500
     }
