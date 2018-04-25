@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 
@@ -141,7 +142,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         /// <param name="limitOrderId">id list of the limit orders to be canceled</param>
         /// <param name="cancellationToken">A cancellation token</param>
         /// <returns></returns>
-        Task<MeResponseModel> CancelLimitOrdersAsync(string[] limitOrderId, CancellationToken cancellationToken = default);
+        Task<MeResponseModel> CancelLimitOrdersAsync(IEnumerable<string> limitOrderId, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Handles market order, Matches with limit order if available

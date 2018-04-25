@@ -227,7 +227,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
             // Cancel all orders one by one
 
             var cancelResponse = await client.Retry(c => c.CancelLimitOrdersAsync(
-                multiOrder.Orders.Select(o => o.Id).ToArray()));
+                multiOrder.Orders.Select(o => o.Id)));
 
             Assert.NotNull(cancelResponse);
             Assert.Equal(MeStatusCodes.Ok, cancelResponse.Status);

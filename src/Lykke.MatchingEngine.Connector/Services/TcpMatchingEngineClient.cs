@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -330,15 +332,17 @@ namespace Lykke.MatchingEngine.Connector.Services
             return CancelLimitOrdersAsync(new[] {limitOrderId}, cancellationToken);
         }
 
-        public async Task<MeResponseModel> CancelLimitOrdersAsync(string[] limitOrderId, CancellationToken cancellationToken = default)
+        public async Task<MeResponseModel> CancelLimitOrdersAsync(IEnumerable<string> limitOrderId, CancellationToken cancellationToken = default)
         {
-            var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), limitOrderId);
+            var idsToCancel = limitOrderId?.ToArray() ?? throw new ArgumentNullException(nameof(limitOrderId));
+
+            var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), idsToCancel);
             var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(CancelLimitOrdersAsync),
-                limitOrderId != null ? string.Join(", ", limitOrderId) : string.Empty,
-                null);
+                idsToCancel.First(),
+                string.Join(", ", idsToCancel));
             try
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
