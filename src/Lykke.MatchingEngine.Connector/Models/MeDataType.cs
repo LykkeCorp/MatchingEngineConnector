@@ -23,6 +23,7 @@
         MarketOrderResponse = 100,
         UpdateBalanceNew = 11,
         MultiLimitOrderCancel = 57,
-        MultiLimitOrderResponse = 98
+        MultiLimitOrderResponse = 98,
+        LimitOrderMassCancel = 121
     }
 }

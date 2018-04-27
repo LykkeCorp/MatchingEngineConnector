@@ -1,4 +1,5 @@
 ﻿using Common;
+using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using ProtoBuf;
 
 namespace Lykke.MatchingEngine.Connector.Models
@@ -24,16 +25,21 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(6, IsRequired = false)]
         public bool CancelAllPreviousLimitOrders { get; set; }
 
-        public static MeMultiLimitOrderModel Create(string id, string clientId, string assetId, MeMultiOrderItemModel[] orders, bool cancelAllPreviousLimitOrders = false)
+        [ProtoMember(7, IsRequired = false)]
+        public int CancelMode { get; set; }
+
+        public static MeMultiLimitOrderModel Create(string id, string clientId, string assetId, MeMultiOrderItemModel[] orders, 
+            bool cancelAllPreviousLimitOrders = false, CancelMode cancelMode = default)
         {
             return new MeMultiLimitOrderModel
             {
                 Id = id,
-                DateTime = (long)System.DateTime.UtcNow.ToUnixTime(),
+                DateTime = (long) System.DateTime.UtcNow.ToUnixTime(),
                 ClientId = clientId,
                 AssetId = assetId,
                 Orders = orders ?? new MeMultiOrderItemModel[0],
-                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders
+                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders,
+                CancelMode = (int) cancelMode
             };
         }
     }

@@ -7,5 +7,6 @@
         public double Volume { get; set; }
         public double Price { get; set; }
         public LimitOrderFeeModel Fee { get; set; }
+        public string OldId { get; set; }
     }
 }

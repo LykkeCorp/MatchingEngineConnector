@@ -67,6 +67,5 @@ namespace Lykke.MatchingEngine.Connector.Tests
             var result = await client.TransferAsync(Guid.NewGuid().ToString(), "", "", "USD", 2, 14, fee, 0);
 
         }
-
     }
 }
