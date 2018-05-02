@@ -18,15 +18,19 @@ namespace Lykke.MatchingEngine.Connector.Models
         [ProtoMember(4, IsRequired = false)]
         public MeLimitOrderFeeModel Fee { get; set; }
 
+        [ProtoMember(6, IsRequired = false)]
+        public string OldUid { get; set; }
+
         public static MeMultiOrderItemModel Create(string id, OrderAction orderAction,
-            double volume, double price, MeLimitOrderFeeModel fee)
+            double volume, double price, MeLimitOrderFeeModel fee, string oldUid)
         {
             return new MeMultiOrderItemModel
             {
                 Id = id,
                 Volume = orderAction == OrderAction.Buy ? volume : -volume,
                 Price = price,
-                Fee = fee
+                Fee = fee,
+                OldUid = oldUid
             };
         }
     }
