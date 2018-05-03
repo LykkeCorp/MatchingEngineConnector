@@ -67,5 +67,26 @@ namespace Lykke.MatchingEngine.Connector.Tests
             var result = await client.TransferAsync(Guid.NewGuid().ToString(), "", "", "USD", 2, 14, fee, 0);
 
         }
+
+        [Fact(Skip = "Manual testing")]
+        public async Task WithdrawalFeeTest2()
+        {
+            var url = "";
+            var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888));
+            client.Start();
+
+            FeeModel fee = new FeeModel()
+            {
+                SourceClientId = "e3fa1d1e-8e7a-44e0-a666-a442bc35515c",
+                TargetClientId = "",
+                Size = 0.025,
+                SizeType = FeeSizeType.PERCENTAGE,
+                Type = FeeType.CLIENT_FEE
+            };
+
+
+            var result = await client.TransferAsync(Guid.NewGuid().ToString(), "", "", "USD", 2, 14, fee, 0);
+
+        }
     }
 }

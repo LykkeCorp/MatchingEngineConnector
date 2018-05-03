@@ -66,15 +66,5 @@ namespace Lykke.MatchingEngine.Connector.Domain
 
             return null;
         }
-
-        public static Fee GenerateTransferFee(double amount, int accuracy, string feeClientId, double feeSizePercentage)
-        {
-            var feeAbsolute = Math.Round(amount * feeSizePercentage, 15).TruncateDecimalPlaces(accuracy, true);
-
-            if (Math.Abs(feeAbsolute) > double.Epsilon)
-                return new Fee(FeeType.CLIENT_FEE, feeAbsolute, null, feeClientId, FeeSizeType.ABSOLUTE);
-
-            return null;
-        }
     }
 }
