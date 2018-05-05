@@ -201,17 +201,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             Fee fee = null;
             if (feeModel != null)
             {
-                // percentage fee in the system is defined as a share of 1 like 0.025 (it means 2.5%)
-                // ME uses percentage fee in percents like 2.5 (the same 2.5%)
-                // so it is required to convert value
-                double feeSize = feeModel.SizeType == FeeSizeType.PERCENTAGE ?
-                    Math.Round(feeModel.Size * 100D, 15).TruncateDecimalPlaces(accuracy, true) :
-                    feeModel.Size;
-
-                if (Math.Abs(feeSize) > double.Epsilon)
-                {
-                    fee = new Fee(feeModel.Type, feeSize, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
-                }
+                fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
             }
 
             var amountWithFee = fee?.Apply(amount) ?? amount;
