@@ -21,6 +21,15 @@ namespace Lykke.MatchingEngine.Connector.Domain
 
         public Fee(FeeType type, double size, string sourceClientId, string targetClientId, FeeSizeType sizeType)
         {
+            switch (sizeType)
+            {
+                case FeeSizeType.ABSOLUTE:
+                case FeeSizeType.PERCENTAGE:
+                    break;
+                default:
+                    throw new Exception("Unknown fee size type");
+            }
+
             Type = type;
             Size = size;
             SourceClientId = sourceClientId;
@@ -36,16 +45,17 @@ namespace Lykke.MatchingEngine.Connector.Domain
             }
             else
             {
-                if (SizeType == FeeSizeType.ABSOLUTE)
+                var amount = 0d;
+                switch (SizeType)
                 {
-                    return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+                    case FeeSizeType.ABSOLUTE:
+                        amount = sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+                        break;
+                    case FeeSizeType.PERCENTAGE:
+                        amount = Math.Round(Math.Abs(sourceAmount) * (1 + Size), 15);
+                        break;
                 }
-                else if (SizeType == FeeSizeType.PERCENTAGE)
-                {
-                    var amount = Math.Round(Math.Abs(sourceAmount) * (1 + Size), 15);
-                    return amount.TruncateDecimalPlaces(accuracy, true);
-                }
-                throw new Exception("Unknown feeContract size type");
+                return amount.TruncateDecimalPlaces(accuracy, true);
             }
         }
 
@@ -64,7 +74,6 @@ namespace Lykke.MatchingEngine.Connector.Domain
                     case FeeSizeType.PERCENTAGE:
                         feeAbsolute = Math.Round(Math.Abs(amount) * feeSize, 15);
                         break;
-                    default: throw new Exception("Unknown feeContract size type");
                 }
 
                 feeAbsolute = feeAbsolute.TruncateDecimalPlaces(accuracy, true);
