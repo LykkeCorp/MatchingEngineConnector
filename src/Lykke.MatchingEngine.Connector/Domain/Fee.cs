@@ -40,11 +40,12 @@ namespace Lykke.MatchingEngine.Connector.Domain
                 {
                     return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
                 }
-                else
+                else if (SizeType == FeeSizeType.PERCENTAGE)
                 {
                     var amount = Math.Round(Math.Abs(sourceAmount) * (1 + Size), 15);
                     return amount.TruncateDecimalPlaces(accuracy, true);
                 }
+                throw new Exception("Unknown feeContract size type");
             }
         }
 
