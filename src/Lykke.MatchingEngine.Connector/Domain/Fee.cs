@@ -28,7 +28,7 @@ namespace Lykke.MatchingEngine.Connector.Domain
             SizeType = sizeType;
         }
 
-        public double Apply(double sourceAmount)
+        public double CalculateAmountWithFee(double sourceAmount, int accuracy)
         {
             if (Type == FeeType.EXTERNAL_FEE)
             {
@@ -36,7 +36,15 @@ namespace Lykke.MatchingEngine.Connector.Domain
             }
             else
             {
-                return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+                if (SizeType == FeeSizeType.ABSOLUTE)
+                {
+                    return sourceAmount > 0 ? sourceAmount + Size : sourceAmount - Size;
+                }
+                else
+                {
+                    var amount = Math.Round(Math.Abs(sourceAmount) * (1 + Size), 15);
+                    return amount.TruncateDecimalPlaces(accuracy, true);
+                }
             }
         }
 
@@ -63,6 +71,16 @@ namespace Lykke.MatchingEngine.Connector.Domain
 
             if (Math.Abs(feeAbsolute) > 0)
                 return new Fee(feeSize.GetFeeType(), feeAbsolute, null, clientId, FeeSizeType.ABSOLUTE);
+
+            return null;
+        }
+
+        public static Fee GenerateTransferFee(double amount, int accuracy, string feeClientId, double feeSizePercentage)
+        {
+            var feeAbsolute = Math.Round(amount * feeSizePercentage, 15).TruncateDecimalPlaces(accuracy, true);
+
+            if (Math.Abs(feeAbsolute) > double.Epsilon)
+                return new Fee(FeeType.CLIENT_FEE, feeAbsolute, null, feeClientId, FeeSizeType.ABSOLUTE);
 
             return null;
         }

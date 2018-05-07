@@ -148,7 +148,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 feeSize,
                 feeSizeType);
 
-            var amountWithFee = fee?.Apply(amount) ?? amount;
+            var amountWithFee = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
 
             var model = MeNewCashInOutModel.Create(
                 id,
@@ -201,10 +201,17 @@ namespace Lykke.MatchingEngine.Connector.Services
             Fee fee = null;
             if (feeModel != null)
             {
-                fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
+                if (feeModel.SizeType == FeeSizeType.PERCENTAGE) // create absolute fee from percentage
+                {
+                    fee = Fee.GenerateTransferFee(amount, accuracy, feeModel.TargetClientId, feeModel.Size);
+                }
+                else
+                {
+                    fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
+                }
             }
 
-            var amountWithFee = fee?.Apply(amount) ?? amount;
+            var amountWithFee = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
 
             var model = MeNewTransferModel.Create(
                 id,
