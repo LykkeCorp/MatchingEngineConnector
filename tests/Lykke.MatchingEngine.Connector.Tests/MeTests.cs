@@ -65,10 +65,11 @@ namespace Lykke.MatchingEngine.Connector.Tests
                 TargetClientId = feeClientId,
                 Size = 15,
                 SizeType = FeeSizeType.ABSOLUTE,
-                Type = FeeType.CLIENT_FEE
+                Type = FeeType.CLIENT_FEE,
+                ChargingType = FeeChargingType.SUBTRACT_FROM_AMOUNT
             };
 
-            var result = await client.TransferAsync(Guid.NewGuid().ToString(), clientId, amountClientId, "USD", 2, 11, fee, 0);
+            var result = await client.TransferAsync(Guid.NewGuid().ToString(), clientId, amountClientId, "USD", 2, 22, fee, 0);
         }
 
         [Fact(Skip = "Manual testing")]
@@ -94,7 +95,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
                 Type = FeeType.EXTERNAL_FEE
             };
 
-            var result = await client.TransferAsync(Guid.NewGuid().ToString(), amountClientId, clientId, "USD", 2, 11, fee, 0);
+            var result = await client.TransferAsync(Guid.NewGuid().ToString(), amountClientId, clientId, "USD", 2, 7, fee, 0);
         }
 
         [Fact(Skip = "Manual testing")]
@@ -114,7 +115,8 @@ namespace Lykke.MatchingEngine.Connector.Tests
                 TargetClientId = feeClientId,
                 Size = 0.025,
                 SizeType = FeeSizeType.PERCENTAGE,
-                Type = FeeType.CLIENT_FEE
+                Type = FeeType.CLIENT_FEE,
+                ChargingType = FeeChargingType.SUBTRACT_FROM_AMOUNT
             };
 
             var result = await client.TransferAsync(Guid.NewGuid().ToString(), clientId, amountClientId, "USD", 2, 11, fee, 0);

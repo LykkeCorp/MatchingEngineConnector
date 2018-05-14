@@ -211,14 +211,29 @@ namespace Lykke.MatchingEngine.Connector.Services
                 }
             }
 
-            var amountWithFee = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
+            var amountToTransfer = amount;
+            switch (feeModel.ChargingType)
+            {
+                case FeeChargingType.RAISE_AMOUNT:
+                    amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
+                    break;
+                case FeeChargingType.SUBTRACT_FROM_AMOUNT:
+                    // default ME behavior - no any amoung change required
+                    break;
+                default:
+                    if (feeModel.Type != FeeType.EXTERNAL_FEE)
+                    {
+                        throw new ArgumentOutOfRangeException("Fee charging type");
+                    }
+                    break;
+            }
 
             var model = MeNewTransferModel.Create(
                 id,
                 fromClientId,
                 toClientId,
                 assetId,
-                amountWithFee,
+                amountToTransfer,
                 fee?.ToApiModel(),
                 overdraft);
 

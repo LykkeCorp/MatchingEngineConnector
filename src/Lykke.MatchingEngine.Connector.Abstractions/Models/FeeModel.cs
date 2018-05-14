@@ -16,5 +16,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Models
         public string TargetClientId { get; set; }
 
         public FeeSizeType SizeType { get; set; }
+
+        public FeeChargingType ChargingType { get; set; }
     }
 }
