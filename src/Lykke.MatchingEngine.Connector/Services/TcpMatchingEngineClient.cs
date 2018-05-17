@@ -198,6 +198,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             double overdraft,
             CancellationToken cancellationToken = default)
         {
+            var amountToTransfer = amount;
+
             Fee fee = null;
             if (feeModel != null)
             {
@@ -209,23 +211,22 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
                 }
-            }
 
-            var amountToTransfer = amount;
-            switch (feeModel.ChargingType)
-            {
-                case FeeChargingType.RAISE_AMOUNT:
-                    amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
-                    break;
-                case FeeChargingType.SUBTRACT_FROM_AMOUNT:
-                    // default ME behavior - no any amoung change required
-                    break;
-                default:
-                    if (feeModel.Type != FeeType.EXTERNAL_FEE)
-                    {
-                        throw new ArgumentOutOfRangeException("Fee charging type");
-                    }
-                    break;
+                switch (feeModel.ChargingType)
+                {
+                    case FeeChargingType.RAISE_AMOUNT:
+                        amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
+                        break;
+                    case FeeChargingType.SUBTRACT_FROM_AMOUNT:
+                        // default ME behavior - no any amoung change required
+                        break;
+                    default:
+                        if (feeModel.Type != FeeType.EXTERNAL_FEE)
+                        {
+                            throw new ArgumentOutOfRangeException("Fee charging type");
+                        }
+                        break;
+                }
             }
 
             var model = MeNewTransferModel.Create(

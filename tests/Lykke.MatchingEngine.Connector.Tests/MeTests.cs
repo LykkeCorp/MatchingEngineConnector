@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Services;
@@ -102,6 +103,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
         public async Task TransferPercentageFee()
         {
             var url = "";
+
             var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888));
             client.Start();
 
@@ -120,6 +122,22 @@ namespace Lykke.MatchingEngine.Connector.Tests
             };
 
             var result = await client.TransferAsync(Guid.NewGuid().ToString(), clientId, amountClientId, "USD", 2, 11, fee, 0);
+        }
+
+        [Fact(Skip = "Manual testing")]
+        public async Task TransferNoFee()
+        {
+            var url = "";
+
+            var client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888));
+            Thread.Sleep(100);
+            client.Start();
+            Thread.Sleep(100);
+
+            var clientId = "";
+            var amountClientId = "";
+
+            var result = await client.TransferAsync(Guid.NewGuid().ToString(), clientId, amountClientId, "USD", 2, 32, null, 0);
         }
 
     }
