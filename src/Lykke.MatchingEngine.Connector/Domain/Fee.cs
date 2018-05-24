@@ -27,7 +27,7 @@ namespace Lykke.MatchingEngine.Connector.Domain
                 case FeeSizeType.PERCENTAGE:
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("Unknown fee size type");
+                    throw new ArgumentOutOfRangeException(nameof(sizeType));
             }
 
             Type = type;

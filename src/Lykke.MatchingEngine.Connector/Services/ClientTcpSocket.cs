@@ -42,7 +42,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _srvFactory = srvFactory;
         }
 
-        private async void SocketThread()
+        private async Task SocketThread()
         {
             while (_working)
             {
@@ -80,7 +80,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             if (_working)
                 throw new Exception("Client socket has already started");
             _working = true;
-            SocketThread();
+            SocketThread().Wait();
         }
 
         TService IClientSocketConsumer<TService>.GetConnection()

@@ -223,7 +223,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                     default:
                         if (feeModel.Type != FeeType.EXTERNAL_FEE)
                         {
-                            throw new ArgumentOutOfRangeException("Fee charging type");
+                            throw new ArgumentOutOfRangeException(nameof(feeModel.ChargingType));
                         }
                         break;
                 }
@@ -241,6 +241,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
             string telemetryFeeSiteType = fee == null ? "" : fee.SizeType == FeeSizeType.PERCENTAGE ? " %" : " abs";
+
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(TransferAsync),
                 id,

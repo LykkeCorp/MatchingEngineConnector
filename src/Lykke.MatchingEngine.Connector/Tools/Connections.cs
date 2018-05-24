@@ -50,19 +50,17 @@ namespace Lykke.MatchingEngine.Connector.Tools
             _log.Add("Socket Accepted. Id=" + connection.Id.ToString(CultureInfo.InvariantCulture));
         }
 
-        public IEnumerable<TcpConnection> AllConnections
+        public IEnumerable<TcpConnection> AllConnections()
         {
-            get
+          
+            _lockSlim.EnterReadLock();
+            try
             {
-                _lockSlim.EnterReadLock();
-                try
-                {
-                    return _sockets.Values.ToArray();
-                }
-                finally
-                {
-                    _lockSlim.ExitReadLock();
-                }
+                return _sockets.Values.ToArray();
+            }
+            finally
+            {
+                _lockSlim.ExitReadLock();
             }
         }
 
