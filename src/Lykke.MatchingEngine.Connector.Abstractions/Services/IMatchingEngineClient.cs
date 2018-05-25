@@ -92,7 +92,7 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             string assetId,
             int accuracy,
             double amount,
-            FeeModel fee,
+            FeeModel feeModel,
             double overdraft,
             CancellationToken cancellationToken = default);
 
