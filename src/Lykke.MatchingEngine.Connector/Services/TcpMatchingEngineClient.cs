@@ -5,10 +5,11 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using Lykke.MatchingEngine.Connector.Abstractions.Models;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
-using Lykke.MatchingEngine.Connector.Domain;
 using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Models.Api;
+using Lykke.MatchingEngine.Connector.Models.Common;
+using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
 using Lykke.MatchingEngine.Connector.Helpers;
 
@@ -141,7 +142,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             FeeSizeType feeSizeType,
             CancellationToken cancellationToken = default)
         {
-            var fee = Fee.GenerateCashInOutFee(
+            var fee = FeeExtensions.GenerateCashInOutFee(
                 amount,
                 accuracy,
                 feeClientId,
@@ -155,7 +156,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 clientId,
                 assetId,
                 amountWithFee,
-                fee?.ToApiModel());
+                fee?.ToMeModel());
 
             var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
@@ -200,16 +201,16 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             var amountToTransfer = amount;
 
-            Fee fee = null;
+            FeeModel fee = null;
             if (feeModel != null)
             {
                 if (feeModel.SizeType == FeeSizeType.PERCENTAGE) // create absolute fee from percentage
                 {
-                    fee = Fee.GenerateTransferFee(amount, accuracy, feeModel.TargetClientId, feeModel.Size);
+                    fee = feeModel.GenerateTransferFee(amount, accuracy);
                 }
                 else
                 {
-                    fee = new Fee(feeModel.Type, feeModel.Size, feeModel.SourceClientId, feeModel.TargetClientId, feeModel.SizeType);
+                    fee = feeModel;
                 }
 
                 switch (feeModel.ChargingType)
@@ -235,7 +236,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 toClientId,
                 assetId,
                 amountToTransfer,
-                fee?.ToApiModel(),
+                fee?.ToMeModel(),
                 overdraft);
 
             var resultTask = _newTasksManager.Add(model.Id, cancellationToken);

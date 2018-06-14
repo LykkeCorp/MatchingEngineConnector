@@ -1,9 +1,0 @@
-﻿namespace Lykke.MatchingEngine.Connector.Abstractions.Models
-{
-    public enum FeeType
-    {
-        NO_FEE = 0,
-        CLIENT_FEE = 1,
-        EXTERNAL_FEE = 2
-    }
-}

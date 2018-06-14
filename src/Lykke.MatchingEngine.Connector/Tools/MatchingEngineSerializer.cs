@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Common;
-using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Models.Me;
 using ProtoBuf;
 
 namespace Lykke.MatchingEngine.Connector.Tools
