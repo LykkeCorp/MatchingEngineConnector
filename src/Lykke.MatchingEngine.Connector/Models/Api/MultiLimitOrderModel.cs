@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.MatchingEngine.Connector.Models.Api
 {
@@ -17,6 +18,6 @@ namespace Lykke.MatchingEngine.Connector.Models.Api
 
         public CancelMode CancelMode { get; set; }
 
-        public IReadOnlyList<MultiOrderItemModel> Orders { get; set; }
+        public IReadOnlyList<MultiOrderItemModel> Orders { get; set; } = Array.Empty<MultiOrderItemModel>();
     }
 }

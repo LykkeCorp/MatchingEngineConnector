@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Lykke.MatchingEngine.Connector.Models.Api
 {
@@ -19,6 +20,6 @@ namespace Lykke.MatchingEngine.Connector.Models.Api
 
         public string AssetPairId { get; set; }
 
-        public IReadOnlyList<LimitOrderStatusModel> Statuses { get; set; }
+        public IReadOnlyList<LimitOrderStatusModel> Statuses { get; set; } = Array.Empty<LimitOrderStatusModel>();
     }
 }
