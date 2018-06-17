@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
-using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Models.Me;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {

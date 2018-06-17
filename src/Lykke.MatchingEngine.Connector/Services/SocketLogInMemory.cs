@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
-using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Models.Me;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {

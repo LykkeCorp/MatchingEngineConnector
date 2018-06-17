@@ -4,7 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
-using Lykke.MatchingEngine.Connector.Models;
+using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
 
 namespace Lykke.MatchingEngine.Connector.Services
