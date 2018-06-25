@@ -112,6 +112,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
+                    _newTasksManager.SetResult(model.Id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
