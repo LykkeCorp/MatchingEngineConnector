@@ -5,6 +5,7 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
+using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models;
 using Lykke.MatchingEngine.Connector.Models.Api;
@@ -35,6 +36,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public SocketStatistic SocketStatistic => _clientTcpSocket.SocketStatistic;
 
+        [Obsolete]
         public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
         {
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
@@ -53,6 +55,25 @@ namespace Lykke.MatchingEngine.Connector.Services
                     return _tcpOrderSocketService;
                 });
         }
+
+        public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ILogFactory logFactory)
+        {
+            _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
+                logFactory,
+                ipEndPoint,
+                (int)_defaultReconnectTimeOut.TotalMilliseconds,
+                () =>
+                {
+                    _tcpOrderSocketService = new TcpOrderSocketService(
+                        _tasksManager,
+                        _newTasksManager,
+                        _marketOrderTasksManager,
+                        _multiLimitOrderTasksManager,
+                        logFactory);
+                    return _tcpOrderSocketService;
+                });
+        }
+
 
         public async Task UpdateBalanceAsync(
             string id,

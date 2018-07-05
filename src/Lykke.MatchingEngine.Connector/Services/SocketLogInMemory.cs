@@ -6,6 +6,7 @@ using Lykke.MatchingEngine.Connector.Models.Me;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
+    [Obsolete("Do not use it. Use overloads without ISocketLog")]
     public class SocketLogInMemory : ISocketLog
     {
         private readonly int _maxItems;

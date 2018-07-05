@@ -2,6 +2,9 @@
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Common.Log;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Helpers;
@@ -13,18 +16,23 @@ namespace Lykke.MatchingEngine.Connector.Tools
         private readonly ITcpSerializer _tcpSerializer;
         private readonly TcpClient _socket;
         private readonly SocketStatistic _socketStatistic;
-        private readonly ISocketLog _log;
+        [Obsolete]
+        [CanBeNull]
+        private readonly ISocketLog _legacyLog;
         private readonly object _disconnectLock = new object();
         private readonly SemaphoreSlim _streamWriteLock = new SemaphoreSlim(1, 1);
+        [CanBeNull]
+        private readonly ILog _log;
 
         internal Action<TcpConnection> DisconnectAction;
 
         private readonly ITcpService _tcpService;
-
+        
         public int Id { get; }
 
         public bool Disconnected { get; private set; }
 
+        [Obsolete]
         public TcpConnection(
             ITcpService tcpService,
             ITcpSerializer tcpSerializer,
@@ -37,7 +45,25 @@ namespace Lykke.MatchingEngine.Connector.Tools
             _tcpSerializer = tcpSerializer;
             _socket = socket;
             _socketStatistic = socketStatistic;
-            _log = log;
+            _legacyLog = log;
+            _tcpService = tcpService;
+            tcpService.SendDataToSocket = SendDataToSocket;
+            _socketStatistic.LastConnectionTime = DateTime.UtcNow;
+        }
+
+        public TcpConnection(
+            ITcpService tcpService,
+            ITcpSerializer tcpSerializer,
+            TcpClient socket,
+            SocketStatistic socketStatistic,
+            ILogFactory logFactory,
+            int id)
+        {
+            Id = id;
+            _tcpSerializer = tcpSerializer;
+            _socket = socket;
+            _socketStatistic = socketStatistic;
+            _log = logFactory.CreateLog(this);
             _tcpService = tcpService;
             tcpService.SendDataToSocket = SendDataToSocket;
             _socketStatistic.LastConnectionTime = DateTime.UtcNow;
@@ -76,7 +102,8 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
                     _socketStatistic.LastDisconnectionTime = DateTime.UtcNow;
 
-                    _log?.Add("Disconnected[" + Id + "]");
+                    _log?.Info("Disconnected", new {connectionId = Id});
+                    _legacyLog?.Add("Disconnected[" + Id + "]");
 
                     if (_tcpService is ISocketNotifier socketNotifier)
                     {
@@ -90,7 +117,8 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
             catch (Exception exception)
             {
-                _log?.Add("Disconnect error. Id=" + Id + "; Msg:" + exception.Message);
+                _log?.Error(exception, "Disconnection error", new {connectionId = Id});
+                _legacyLog?.Add("Disconnect error. Id=" + Id + "; Msg:" + exception.Message);
             }
         }
 
@@ -127,7 +155,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception ex)
             {
                 await Disconnect();
-                _log?.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
+
+                _log?.Error(ex, context: new {connectionId = Id});
+                _legacyLog?.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
+                
                 TelemetryHelper.SubmitException(ex);
                 return false;
             }
@@ -154,7 +185,10 @@ namespace Lykke.MatchingEngine.Connector.Tools
             catch (Exception exception)
             {
                 await Disconnect();
-                _log?.Add($"Error ReadData [{Id}]: {exception}");
+
+                _log?.Error(exception, context: new {connectionId = Id});
+                _legacyLog?.Add($"Error ReadData [{Id}]: {exception}");
+                
                 TelemetryHelper.SubmitException(exception);
             }
         }
