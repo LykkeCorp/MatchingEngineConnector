@@ -3,6 +3,7 @@ using Lykke.MatchingEngine.Connector.Abstractions.Services;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
+    [Obsolete("Do not use it. Use overloads without ISocketLog")]
     public class SocketLogDynamic : ISocketLog
     {
         private readonly Action<int> _changeCount;

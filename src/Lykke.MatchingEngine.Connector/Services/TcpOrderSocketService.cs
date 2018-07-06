@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
+using Common.Log;
+using JetBrains.Annotations;
+using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Me;
 
@@ -14,9 +17,14 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<TheNewResponseModel> _newTasksManager;
         private readonly TasksManager<MarketOrderResponseModel> _marketOrdersTasksManager;
         private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiOrdersTasksManager;
-        private readonly ISocketLog _logger;
+        [Obsolete]
+        [CanBeNull]
+        private readonly ISocketLog _legacyLog;
         private readonly bool _ignoreErrors;
+        [CanBeNull]
+        private readonly ILog _log;
 
+        [Obsolete]
         public TcpOrderSocketService(TasksManager<TheResponseModel> tasksManager,
             TasksManager<TheNewResponseModel> newTasksManager,
             TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
@@ -28,8 +36,21 @@ namespace Lykke.MatchingEngine.Connector.Services
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
             _multiOrdersTasksManager = multiOrdersTasksManager;
-            _logger = logger;
+            _legacyLog = logger;
             _ignoreErrors = ignoreErrors;
+        }
+
+        public TcpOrderSocketService(TasksManager<TheResponseModel> tasksManager,
+            TasksManager<TheNewResponseModel> newTasksManager,
+            TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
+            TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
+            ILogFactory logFactory)
+        {
+            _tasksManager = tasksManager;
+            _newTasksManager = newTasksManager;
+            _marketOrdersTasksManager = marketOrdersTasksManager;
+            _multiOrdersTasksManager = multiOrdersTasksManager;
+            _log = logFactory.CreateLog(this);
         }
 
         public void HandleDataFromSocket(object data)
@@ -39,21 +60,29 @@ namespace Lykke.MatchingEngine.Connector.Services
                 switch (data)
                 {
                     case TheResponseModel theResponse:
-                        _logger?.Add($"Response ProcessId: {theResponse.ProcessId}");
+                        _log?.Info("Response", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
+                        _legacyLog?.Add($"Response ProcessId: {theResponse.ProcessId}");
                         _tasksManager.SetResult(theResponse.ProcessId, theResponse);
                         break;
+
                     case TheNewResponseModel theNewResponse:
-                        _logger?.Add($"Response Id: {theNewResponse.Id}");
+                        _log?.Info("Response", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
+                        _legacyLog?.Add($"Response Id: {theNewResponse.Id}");
                         _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
                         break;
+
                     case MarketOrderResponseModel theMarketOrderResponse:
-                        _logger?.Add($"Response Id: {theMarketOrderResponse.Id}");
+                        _log?.Info("Response", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
+                        _legacyLog?.Add($"Response Id: {theMarketOrderResponse.Id}");
                         _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
                         break;
+
                     case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
-                        _logger?.Add($"Response Id: {multiLimitOrderResponse.Id}");
+                        _log?.Info("Response", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
+                        _legacyLog?.Add($"Response Id: {multiLimitOrderResponse.Id}");
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
+
                     // No handlers for the following messages
                     case MePingModel m0:
                     case MeCashInOutModel m1:
@@ -79,10 +108,12 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
             catch (KeyNotFoundException exception)
             {
+                _log?.Error(exception, context: data);
+
                 if (_ignoreErrors)
                 {
-                    _logger?.Add($"Response: {data.ToJson()}");
-                    _logger?.Add(exception.ToString());
+                    _legacyLog?.Add($"Response: {data.ToJson()}");
+                    _legacyLog?.Add(exception.ToString());
                 }
                 else
                 {
