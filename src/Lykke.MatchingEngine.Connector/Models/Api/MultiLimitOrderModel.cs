@@ -12,7 +12,7 @@ namespace Lykke.MatchingEngine.Connector.Models.Api
 
         public string ClientId { get; set; }
 
-        public string AssetId { get; set; }
+        public string AssetPairId { get; set; }
 
         public bool CancelPreviousOrders { get; set; }
 
