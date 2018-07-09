@@ -33,8 +33,6 @@ namespace Lykke.MatchingEngine.Connector.Services
         private bool _working;
         private TService _service;
         
-
-
         public bool Connected => _service != null;
 
         public SocketStatistic SocketStatistic { get; }
@@ -100,7 +98,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 finally
                 {
                     _service = default(TService);
-                    _log?.Error("Connection timeout...");
+                    _log?.Warning("Connection timeout...");
                     _legacyLog?.Add("Connection Timeout...");
                     Thread.Sleep(_reconnectTimeOut);
                 }
@@ -124,7 +122,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             _log?.Debug("Attempt to connect", new
             {
-                address = _ipEndPoint.Address,
+                address = _ipEndPoint.Address.ToString(),
                 port = _ipEndPoint.Port
             });
             _legacyLog?.Add("Attempt To Connect:" + _ipEndPoint.Address + ":" + _ipEndPoint.Port);
