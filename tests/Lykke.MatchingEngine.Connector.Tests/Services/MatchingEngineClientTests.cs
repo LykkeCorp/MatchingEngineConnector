@@ -388,7 +388,7 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
 
             return new MultiLimitOrderModel
             {
-                AssetId = assetPairId,
+                AssetPairId = assetPairId,
                 CancelPreviousOrders = cancelPreviousOrders,
                 ClientId = clientId,
                 Id = GenerateUid(),

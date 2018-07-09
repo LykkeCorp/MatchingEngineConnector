@@ -499,7 +499,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
                 nameof(PlaceMultiLimitOrderAsync),
                 model.Id,
-                model.AssetId);
+                model.AssetPairId);
             try
             {
                 if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel, cancellationToken))

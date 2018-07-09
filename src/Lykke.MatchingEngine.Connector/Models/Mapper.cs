@@ -64,7 +64,7 @@ namespace Lykke.MatchingEngine.Connector.Models
             return MeMultiLimitOrderModel.Create(
                 model.Id,
                 model.ClientId,
-                model.AssetId,
+                model.AssetPairId,
                 model.Orders
                     .Select(m => MeMultiOrderItemModel.Create(m.Id, m.OrderAction, m.Volume, m.Price, m.Fee?.ToMeModel(), m.OldId))
                     .ToArray(),
