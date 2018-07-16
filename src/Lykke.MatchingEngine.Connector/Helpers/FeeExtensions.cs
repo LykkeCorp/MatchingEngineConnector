@@ -23,11 +23,12 @@ namespace Lykke.MatchingEngine.Connector
             if (Math.Abs(feeAbsolute) > double.Epsilon)
                 return new FeeModel
                 {
-                    Type = FeeType.CLIENT_FEE,
+                    Type = feeModel.Type,
                     Size = feeAbsolute,
-                    SourceClientId = null,
+                    SourceClientId = feeModel.SourceClientId,
                     TargetClientId = feeModel.TargetClientId,
                     SizeType = FeeSizeType.ABSOLUTE,
+                    ChargingType = feeModel.ChargingType
                 };
 
             return null;
