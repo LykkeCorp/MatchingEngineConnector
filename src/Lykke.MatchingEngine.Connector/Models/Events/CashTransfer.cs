@@ -16,13 +16,13 @@ namespace Lykke.MatchingEngine.Connector.Models.Events
         [ProtoMember(3, IsRequired = true)]
         public string Volume { get; set; }
 
-        [ProtoMember(3, IsRequired = false)]
+        [ProtoMember(4, IsRequired = false)]
         public string OverdraftLimit { get; set; }
 
-        [ProtoMember(4, IsRequired = true)]
+        [ProtoMember(5, IsRequired = true)]
         public string AssetId { get; set; }
 
-        [ProtoMember(4, IsRequired = false)]
+        [ProtoMember(6, IsRequired = false)]
         public List<Fee> Fees { get; set; }
     }
 }
