@@ -33,7 +33,7 @@ namespace Lykke.MatchingEngine.Connector.Models
 
         public static MeNewLimitOrderModel ToNewMeModel(this LimitOrderModel model)
         {
-            return MeNewLimitOrderModel.Create(
+            return MeNewLimitOrderModel.CreateMeLimitOrder(
                 model.Id,
                 model.ClientId,
                 model.AssetPairId,
@@ -43,6 +43,23 @@ namespace Lykke.MatchingEngine.Connector.Models
                 model.CancelPreviousOrders,
                 model.Fee?.ToMeModel(),
                 model.Fees?.Select(item => item.ToMeModel()).ToArray());
+        }
+
+        public static MeNewLimitOrderModel ToNewMeModel(this StopLimitOrderModel model)
+        {
+            return MeNewLimitOrderModel.CreateMeStopLimitOrder(
+                model.Id,
+                model.ClientId,
+                model.AssetPairId,
+                model.OrderAction,
+                model.Volume,
+                model.CancelPreviousOrders,
+                model.Fee?.ToMeModel(),
+                model.Fees?.Select(item => item.ToMeModel()).ToArray(),
+                model.LowerLimitPrice,
+                model.LowerPrice,
+                model.UpperLimitPrice,
+                model.UpperPrice);
         }
 
         public static MeLimitOrderFeeModel ToMeModel(this LimitOrderFeeModel model)

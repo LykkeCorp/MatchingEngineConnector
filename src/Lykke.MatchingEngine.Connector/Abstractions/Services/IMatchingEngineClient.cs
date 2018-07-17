@@ -127,6 +127,14 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
         Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Place a stop limit order on the matching engine
+        /// </summary>
+        /// <param name="model">A stop limit order</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        /// <returns></returns>
+        Task<MeResponseModel> PlaceStopLimitOrderAsync(StopLimitOrderModel model, CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Cancel previously placed Limit order
         /// </summary>
         /// <param name="limitOrderId">id of the limit order to be canceled</param>
