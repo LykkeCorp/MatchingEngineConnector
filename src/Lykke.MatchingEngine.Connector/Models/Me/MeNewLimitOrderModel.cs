@@ -60,19 +60,11 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
             MeLimitOrderFeeModel fee,
             MeLimitOrderFeeModel[] fees)
         {
-            return new MeNewLimitOrderModel
-            {
-                Id = id,
-                TimeStamp = (long)System.DateTime.UtcNow.ToUnixTime(),
-                ClientId = clientId,
-                AssetPairId = assetPairId,
-                Volume = orderAction == OrderAction.Buy ? volume : -volume,
-                Price = price,
-                CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders,
-                Fee = fee,
-                Fees = fees,
-                Type = 0
-            };
+            var order = CreateBasicOrder(id, clientId, assetPairId, orderAction, volume, cancelAllPreviousLimitOrders,
+                fee, fees, 0);
+            order.Price = price;
+
+            return order;
         }
 
         public static MeNewLimitOrderModel CreateMeStopLimitOrder(
@@ -89,6 +81,28 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
             double upperLimitPrice,
             double upperPrice)
         {
+            var order = CreateBasicOrder(id, clientId, assetPairId, orderAction, volume, cancelAllPreviousLimitOrders,
+                fee, fees, 1);
+
+            order.LowerLimitPrice = lowerLimitPrice;
+            order.LowerPrice = lowerPrice;
+            order.UpperLimitPrice = upperLimitPrice;
+            order.UpperPrice = upperPrice;
+
+            return order;
+        }
+
+        private static MeNewLimitOrderModel CreateBasicOrder(
+            string id,
+            string clientId,
+            string assetPairId,
+            OrderAction orderAction,
+            double volume,
+            bool cancelAllPreviousLimitOrders,
+            MeLimitOrderFeeModel fee,
+            MeLimitOrderFeeModel[] fees,
+            int type)
+        {
             return new MeNewLimitOrderModel
             {
                 Id = id,
@@ -99,11 +113,7 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
                 CancelAllPreviousLimitOrders = cancelAllPreviousLimitOrders,
                 Fee = fee,
                 Fees = fees,
-                Type = 1,
-                LowerLimitPrice = lowerLimitPrice,
-                LowerPrice = lowerPrice,
-                UpperLimitPrice = upperLimitPrice,
-                UpperPrice = upperPrice
+                Type = type
             };
         }
     }
