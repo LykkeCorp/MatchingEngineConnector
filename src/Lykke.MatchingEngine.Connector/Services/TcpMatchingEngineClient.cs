@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 using Common;
 using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Helpers;
 using Lykke.MatchingEngine.Connector.Models;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
-using Lykke.MatchingEngine.Connector.Helpers;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
@@ -252,6 +252,11 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
             return SendData(
                 model.ToNewMeModel(),
                 _newTasksManager,
@@ -264,6 +269,11 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public Task<MeResponseModel> PlaceStopLimitOrderAsync(StopLimitOrderModel model, CancellationToken cancellationToken = default)
         {
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
+
             return SendData(
                 model.ToNewMeModel(),
                 _newTasksManager,
@@ -276,7 +286,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId, CancellationToken cancellationToken = default)
         {
-            return CancelLimitOrdersAsync(new[] {limitOrderId}, cancellationToken);
+            return CancelLimitOrdersAsync(new[] { limitOrderId }, cancellationToken);
         }
 
         public Task<MeResponseModel> CancelLimitOrdersAsync(IEnumerable<string> limitOrderId, CancellationToken cancellationToken = default)
@@ -332,7 +342,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 x => new MarketOrderResponse
                 {
                     Price = x.Price,
-                    Status = (MeStatusCodes) x.Status
+                    Status = (MeStatusCodes)x.Status
                 },
                 cancellationToken,
                 model.Id,
@@ -377,11 +387,11 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         private async Task<TResponse> SendData<TModel, TResult, TResponse>(
-            TModel model, 
-            TasksManager<TResult> manager, 
-            Func<TResult, TResponse> convert, 
-            CancellationToken cancellationToken, 
-            string id, 
+            TModel model,
+            TasksManager<TResult> manager,
+            Func<TResult, TResponse> convert,
+            CancellationToken cancellationToken,
+            string id,
             string telemetryData,
             [CallerMemberName] string callerName = "")
             where TResult : class
