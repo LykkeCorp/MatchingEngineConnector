@@ -1,29 +1,15 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
-using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
-using Lykke.MatchingEngine.Connector.Services;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Lykke.MatchingEngine.Connector.Tests.Services
 {
-    public class MatchingEngineClientTests
+    public class MatchingEngineClientTests : BaseMeClientTests
     {
-        private const string Url = "";
-        private const string ClientId = "";
-
-        private readonly ITestOutputHelper _log;
-
-        public MatchingEngineClientTests(ITestOutputHelper log)
-        {
-            _log = log;
-        }
-
         /// <summary>
         /// ME must return "NotFoundPrevious" when OldUid is specified and there are no orders with such Ids
         /// </summary>
@@ -128,7 +114,7 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
 
             // Replace only buy orders with Mode = NotEmptySide
 
-            var multiBuyOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.3,  0.4 });
+            var multiBuyOrder = CreateMultiOrder(ClientId, assetPairId, buyPrices: new[] { 0.3, 0.4 });
             var buyResponse = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiBuyOrder));
 
             ValidateResponse(buyResponse, 2, MeStatusCodes.Ok);
@@ -151,8 +137,8 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
             // Place buy and sell orders
 
             var multiOrder = CreateMultiOrder(ClientId, assetPairId,
-                buyPrices: new[] {0.1, 0.2},
-                sellPrices: new[] {1001.0, 1002.0});
+                buyPrices: new[] { 0.1, 0.2 },
+                sellPrices: new[] { 1001.0, 1002.0 });
             var response = await client.Retry(c => c.PlaceMultiLimitOrderAsync(multiOrder));
 
             ValidateResponse(response, 4, MeStatusCodes.Ok);
@@ -404,25 +390,6 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
             Assert.NotNull(response);
             Assert.Equal(expectedCount, response.Statuses.Count);
             Assert.True(response.Statuses.All(s => s.Status == expectedStatusCode));
-        }
-
-        private static string GenerateUid()
-        {
-            return Guid.NewGuid().ToString();
-        }
-
-        private static IMatchingEngineClient CreateConnection(string url)
-        {
-            if (string.IsNullOrEmpty(url))
-            {
-                throw new ArgumentNullException(nameof(url), "Url must be specified");
-            }
-
-            var client =
-                new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()),
-                    8888));
-            client.Start();
-            return client;
         }
     }
 }

@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
 using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Helpers;
 using Lykke.MatchingEngine.Connector.Models;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
-using Lykke.MatchingEngine.Connector.Helpers;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
@@ -75,7 +76,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
 
-        public async Task UpdateBalanceAsync(
+        public Task UpdateBalanceAsync(
             string id,
             string clientId,
             string assetId,
@@ -87,30 +88,18 @@ namespace Lykke.MatchingEngine.Connector.Services
                 clientId,
                 assetId,
                 value);
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(UpdateBalanceAsync),
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
                 id,
-                assetId);
-            try
-            {
-                await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken);
-
-                await resultTask;
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+                assetId
+            );
         }
 
-        public async Task<MeResponseModel> CashInOutAsync(
+        public Task<MeResponseModel> CashInOutAsync(
             string id,
             string clientId,
             string assetId,
@@ -123,37 +112,17 @@ namespace Lykke.MatchingEngine.Connector.Services
                 assetId,
                 amount);
 
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
-
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(CashInOutAsync),
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
                 id,
-                assetId);
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+                assetId
+            );
         }
 
-        public async Task<MeResponseModel> CashInOutAsync(
+        public Task<MeResponseModel> CashInOutAsync(
             string id,
             string clientId,
             string assetId,
@@ -180,37 +149,17 @@ namespace Lykke.MatchingEngine.Connector.Services
                 amountWithFee,
                 fee?.ToMeModel());
 
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
-
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(CashInOutAsync),
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
                 id,
-                $"{assetId} with acc {accuracy} and fee type {feeSizeType}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+                $"{assetId} with acc {accuracy} and fee type {feeSizeType}"
+            );
         }
 
-        public async Task<MeResponseModel> TransferAsync(
+        public Task<MeResponseModel> TransferAsync(
             string id,
             string fromClientId,
             string toClientId,
@@ -260,40 +209,19 @@ namespace Lykke.MatchingEngine.Connector.Services
                 amountToTransfer,
                 fee?.ToMeModel(),
                 overdraft);
-
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
-
             string telemetryFeeSiteType = fee == null ? "" : fee.SizeType == FeeSizeType.PERCENTAGE ? " %" : " abs";
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(TransferAsync),
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
                 id,
-                $"{assetId} with acc {accuracy} and fee size{telemetryFeeSiteType} {fee?.Size ?? 0}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+                $"{assetId} with acc {accuracy} and fee size{telemetryFeeSiteType} {fee?.Size ?? 0}"
+            );
         }
 
-        public async Task<MeResponseModel> SwapAsync(
+        public Task<MeResponseModel> SwapAsync(
             string id,
             string clientId1,
             string assetId1,
@@ -311,110 +239,72 @@ namespace Lykke.MatchingEngine.Connector.Services
                 clientId2,
                 assetId2,
                 amount2);
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(SwapAsync),
-                id,
-                $"From {assetId1} to {assetId2}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                $"From {assetId1} to {assetId2}"
+            );
         }
 
-        public async Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default)
+        public Task<MeResponseModel> PlaceLimitOrderAsync(LimitOrderModel model, CancellationToken cancellationToken = default)
         {
-            var limitOrderModel = model.ToNewMeModel();
-            var resultTask = _newTasksManager.Add(limitOrderModel.Id, cancellationToken);
+            if (model == null)
+            {
+                throw new ArgumentNullException(nameof(model));
+            }
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(PlaceLimitOrderAsync),
+            return SendData(
+                model.ToNewMeModel(),
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
                 model.Id,
-                $"{model.OrderAction} {model.AssetPairId}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderModel, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
+                $"{model.OrderAction} {model.AssetPairId}"
+            );
+        }
 
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
+        public Task<MeResponseModel> PlaceStopLimitOrderAsync(StopLimitOrderModel model, CancellationToken cancellationToken = default)
+        {
+            if (model == null)
             {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
+                throw new ArgumentNullException(nameof(model));
             }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+
+            return SendData(
+                model.ToNewMeModel(),
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                $"{model.OrderAction} {model.AssetPairId}"
+            );
         }
 
         public Task<MeResponseModel> CancelLimitOrderAsync(string limitOrderId, CancellationToken cancellationToken = default)
         {
-            return CancelLimitOrdersAsync(new[] {limitOrderId}, cancellationToken);
+            return CancelLimitOrdersAsync(new[] { limitOrderId }, cancellationToken);
         }
 
-        public async Task<MeResponseModel> CancelLimitOrdersAsync(IEnumerable<string> limitOrderId, CancellationToken cancellationToken = default)
+        public Task<MeResponseModel> CancelLimitOrdersAsync(IEnumerable<string> limitOrderId, CancellationToken cancellationToken = default)
         {
             var idsToCancel = limitOrderId?.ToArray() ?? throw new ArgumentNullException(nameof(limitOrderId));
-
             var model = MeNewLimitOrderCancelModel.Create(Guid.NewGuid().ToString(), idsToCancel);
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(CancelLimitOrdersAsync),
-                idsToCancel.FirstOrDefault(),
-                string.Join(", ", idsToCancel));
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                string.Join(", ", idsToCancel)
+            );
         }
 
-        public async Task<string> HandleMarketOrderAsync(
+        public Task<string> HandleMarketOrderAsync(
             string clientId,
             string assetPairId,
             OrderAction orderAction,
@@ -423,8 +313,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             double? reservedLimitVolume = null,
             CancellationToken cancellationToken = default)
         {
-            var id = GetNextRequestId();
 
+            var id = GetNextRequestId();
             var model = MeMarketOrderObsoleteModel.Create(
                 id,
                 clientId,
@@ -433,150 +323,97 @@ namespace Lykke.MatchingEngine.Connector.Services
                 volume,
                 straight,
                 reservedLimitVolume);
-            var resultTask = _tasksManager.Add(model.Id, cancellationToken);
 
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(HandleMarketOrderAsync),
-                id.ToString(),
-                $"{orderAction} {assetPairId}");
-            try
-            {
-                await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken);
-
-                var result = await resultTask;
-                return result.RecordId;
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+            return SendData(
+                model,
+                _tasksManager,
+                x => x.RecordId,
+                cancellationToken,
+                model.Id.ToString(),
+                $"{orderAction} {assetPairId}"
+            );
         }
 
-        public async Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model, CancellationToken cancellationToken = default)
+        public Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model, CancellationToken cancellationToken = default)
         {
-            var marketOrderModel = model.ToMeModel();
-
-            var resultTask = _marketOrderTasksManager.Add(marketOrderModel.Id, cancellationToken);
-
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                "HandleMarketOrderAsync from model",
-                model.Id,
-                $"{model.OrderAction} {model.AssetPairId}");
-            try
-            {
-                await _tcpOrderSocketService.SendDataToSocket(marketOrderModel, cancellationToken);
-
-                var result = await resultTask;
-                return new MarketOrderResponse
+            return SendData(
+                model.ToMeModel(),
+                _marketOrderTasksManager,
+                x => new MarketOrderResponse
                 {
-                    Price = result.Price,
-                    Status = (MeStatusCodes)result.Status
-                };
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
+                    Price = x.Price,
+                    Status = (MeStatusCodes)x.Status
+                },
+                cancellationToken,
+                model.Id,
+                $"{model.OrderAction} {model.AssetPairId}"
+            );
         }
 
-        public async Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model, CancellationToken cancellationToken = default)
+        public Task<MultiLimitOrderResponse> PlaceMultiLimitOrderAsync(MultiLimitOrderModel model, CancellationToken cancellationToken = default)
         {
-            var multiLimitOrderModel = model.ToMeModel();
-            var resultTask = _multiLimitOrderTasksManager.Add(model.Id, cancellationToken);
+            return SendData(
+                model.ToMeModel(),
+                _multiLimitOrderTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                model.AssetPairId
+            );
+        }
+
+        public Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model, CancellationToken cancellationToken = default)
+        {
+            return SendData(
+                model.ToMeModel(),
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                $"{model.AssetPairId} IsBuy={model.IsBuy}"
+            );
+        }
+
+        public Task<MeResponseModel> MassCancelLimitOrdersAsync(LimitOrderMassCancelModel model, CancellationToken cancellationToken = default)
+        {
+            return SendData(
+                model.ToMeModel(),
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                model.Id,
+                $"{model.AssetPairId} IsBuy={model.IsBuy}"
+            );
+        }
+
+        private async Task<TResponse> SendData<TModel, TResult, TResponse>(
+            TModel model,
+            TasksManager<TResult> manager,
+            Func<TResult, TResponse> convert,
+            CancellationToken cancellationToken,
+            string id,
+            string telemetryData,
+            [CallerMemberName] string callerName = "")
+            where TResult : class
+            where TResponse : class
+        {
+            var resultTask = manager.Add(id, cancellationToken);
 
             var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(PlaceMultiLimitOrderAsync),
-                model.Id,
-                model.AssetPairId);
+                callerName,
+                id,
+                telemetryData);
             try
             {
-                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderModel, cancellationToken))
+                if (!await _tcpOrderSocketService.SendDataToSocket(model, cancellationToken))
                 {
-                    _multiLimitOrderTasksManager.SetResult(model.Id, null);
+                    manager.SetResult(id, null);
                     TelemetryHelper.SubmitOperationFail(telemetryOperation);
                     return null;
                 }
 
                 var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
-        }
-
-        public async Task<MeResponseModel> CancelMultiLimitOrderAsync(MultiLimitOrderCancelModel model, CancellationToken cancellationToken = default)
-        {
-            var multiLimitOrderCancelModel = model.ToMeModel();
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
-
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(CancelMultiLimitOrderAsync),
-                model.Id,
-                $"{model.AssetPairId} IsBuy={model.IsBuy}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(multiLimitOrderCancelModel, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
-            }
-            catch (Exception ex)
-            {
-                TelemetryHelper.SubmitException(ex);
-                TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                throw;
-            }
-            finally
-            {
-                TelemetryHelper.SubmitOperationResult(telemetryOperation);
-            }
-        }
-
-        public async Task<MeResponseModel> MassCancelLimitOrdersAsync(LimitOrderMassCancelModel model, CancellationToken cancellationToken = default)
-        {
-            var limitOrderMassCancelModel = model.ToMeModel();
-            var resultTask = _newTasksManager.Add(model.Id, cancellationToken);
-
-            var telemetryOperation = TelemetryHelper.InitTelemetryOperation(
-                nameof(MassCancelLimitOrdersAsync),
-                model.Id,
-                $"{model.AssetPairId} IsBuy={model.IsBuy}");
-            try
-            {
-                if (!await _tcpOrderSocketService.SendDataToSocket(limitOrderMassCancelModel, cancellationToken))
-                {
-                    _newTasksManager.SetResult(model.Id, null);
-                    TelemetryHelper.SubmitOperationFail(telemetryOperation);
-                    return null;
-                }
-
-                var result = await resultTask;
-                return result.ToDomainModel();
+                return convert(result);
             }
             catch (Exception ex)
             {
