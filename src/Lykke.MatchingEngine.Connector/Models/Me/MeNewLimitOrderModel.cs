@@ -23,7 +23,7 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
         public double Volume { get; set; }
 
         [ProtoMember(6, IsRequired = false)]
-        public double Price { get; set; }
+        public double? Price { get; set; }
 
         [ProtoMember(7, IsRequired = false)]
         public bool CancelAllPreviousLimitOrders { get; set; }
@@ -38,16 +38,16 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
         public int Type { get; set; }
 
         [ProtoMember(11, IsRequired = false)]
-        public double LowerLimitPrice { get; set; }
+        public double? LowerLimitPrice { get; set; }
 
         [ProtoMember(12, IsRequired = false)]
-        public double LowerPrice { get; set; }
+        public double? LowerPrice { get; set; }
 
         [ProtoMember(13, IsRequired = false)]
-        public double UpperLimitPrice { get; set; }
+        public double? UpperLimitPrice { get; set; }
 
         [ProtoMember(14, IsRequired = false)]
-        public double UpperPrice { get; set; }
+        public double? UpperPrice { get; set; }
 
         public static MeNewLimitOrderModel CreateMeLimitOrder(
             string id,
@@ -76,10 +76,10 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
             bool cancelAllPreviousLimitOrders,
             MeLimitOrderFeeModel fee,
             MeLimitOrderFeeModel[] fees,
-            double lowerLimitPrice,
-            double lowerPrice,
-            double upperLimitPrice,
-            double upperPrice)
+            double? lowerLimitPrice,
+            double? lowerPrice,
+            double? upperLimitPrice,
+            double? upperPrice)
         {
             var order = CreateBasicOrder(id, clientId, assetPairId, orderAction, volume, cancelAllPreviousLimitOrders,
                 fee, fees, 1);
