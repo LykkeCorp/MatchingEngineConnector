@@ -2,7 +2,7 @@
 {
     public enum FeeInstructionSizeType
     {
-        UnknownFeeSizeType = 0,
+        Unknown = 0,
         Percentage = 1,
         Absolute = 2
     }

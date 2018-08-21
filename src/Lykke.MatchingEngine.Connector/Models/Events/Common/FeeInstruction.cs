@@ -19,7 +19,7 @@ namespace Lykke.MatchingEngine.Connector.Models.Events.Common
         public string MakerSize { get; set; }
 
         [ProtoMember(5, IsRequired = false)]
-        public FeeInstructionMakeSizeType MakerSizeType { get; set; }
+        public FeeInstructionSizeType MakerSizeType { get; set; }
 
         [ProtoMember(6, IsRequired = false)]
         public string SourceWalletd { get; set; }
