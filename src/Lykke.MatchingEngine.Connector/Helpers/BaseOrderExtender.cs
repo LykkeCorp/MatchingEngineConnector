@@ -7,11 +7,6 @@ namespace Lykke.MatchingEngine.Connector.Helpers
         public const string Buy = "buy";
         public const string Sell = "sell";
 
-        public static OrderAction OrderAction(this IOrderBase orderBase)
-        {
-            return orderBase.Volume > 0 ? Models.Common.OrderAction.Buy : Models.Common.OrderAction.Sell;
-        }
-
         public static OrderAction? GetOrderAction(string actionWord)
         {
             if (actionWord.ToLower() == Buy)
