@@ -3,7 +3,7 @@
   
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageId>Lykke.MatchingEngine.Connector</PackageId>
+    <PackageId>Lykke.MatchingEngineConnector</PackageId>
     <Version>1.0.1</Version>
     <Authors>Lykke</Authors>
     <Company>Lykke</Company>
