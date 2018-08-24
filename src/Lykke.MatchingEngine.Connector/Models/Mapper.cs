@@ -72,7 +72,7 @@ namespace Lykke.MatchingEngine.Connector.Models
                 model.TargetClientId,
                 model.MakerSizeType,
                 model.TakerSizeType,
-                model.AssetId.ToArray(),
+                model.AssetId?.ToArray(),
                 model.MakerFeeModificator);
         }
 
