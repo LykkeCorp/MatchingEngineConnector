@@ -12,10 +12,10 @@ namespace Lykke.MatchingEngine.Connector.Models.Events
         public string TradeId { get; set; }
 
         [ProtoMember(2, IsRequired = true)]
-        public string AssetId { get; set; }
+        public string BaseAssetId { get; set; }
 
         [ProtoMember(3, IsRequired = true)]
-        public string Volume { get; set; }
+        public string BaseVolume { get; set; }
 
         [ProtoMember(4, IsRequired = true)]
         public string Price { get; set; }
@@ -33,10 +33,10 @@ namespace Lykke.MatchingEngine.Connector.Models.Events
         public string OppositeWalletId { get; set; }
 
         [ProtoMember(9, IsRequired = true)]
-        public string OppositeAssetId { get; set; }
+        public string QuotingAssetId { get; set; }
 
         [ProtoMember(10, IsRequired = true)]
-        public string OppositeVolume { get; set; }
+        public string QuotingVolume { get; set; }
 
         [ProtoMember(11, IsRequired = true)]
         public int Index { get; set; }
