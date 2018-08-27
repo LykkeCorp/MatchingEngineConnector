@@ -123,7 +123,7 @@ namespace Lykke.MatchingEngine.Connector.Models.Events
         /// Market orders
         /// </summary>
         [ProtoMember(20, IsRequired = false)]
-        public bool? Straight { get; set; }
+        public bool Straight { get; set; }
 
         [ProtoMember(21, IsRequired = false)]
         public List<FeeInstruction> Fees { get; set; }
