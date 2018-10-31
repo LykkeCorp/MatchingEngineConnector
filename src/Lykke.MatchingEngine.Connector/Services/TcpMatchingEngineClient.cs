@@ -140,7 +140,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 feeSize,
                 feeSizeType);
 
-            var amountWithFee = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
+            var amountWithFee = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount.TruncateDecimalPlaces(accuracy, true);
 
             var model = MeNewCashInOutModel.Create(
                 id,
@@ -170,7 +170,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             double overdraft,
             CancellationToken cancellationToken = default)
         {
-            var amountToTransfer = amount;
+            var amountToTransfer = amount.TruncateDecimalPlaces(accuracy, true);
 
             FeeModel fee = null;
             if (feeModel != null)
@@ -187,7 +187,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 switch (feeModel.ChargingType)
                 {
                     case FeeChargingType.RAISE_AMOUNT:
-                        amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amount;
+                        amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amountToTransfer;
                         break;
                     case FeeChargingType.SUBTRACT_FROM_AMOUNT:
                         // default ME behavior - no any amoung change required
