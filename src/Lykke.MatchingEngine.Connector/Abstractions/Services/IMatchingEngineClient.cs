@@ -33,6 +33,22 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
             CancellationToken cancellationToken = default);
 
         /// <summary>
+        /// Manually set reserved balance for a client
+        /// </summary>
+        /// <param name="id">Internal Id of transaction for identification and deduplication</param>
+        /// <param name="clientId">Id of the client</param>
+        /// <param name="assetId">Id of the asset</param>
+        /// <param name="amount">New reserved balance value</param>
+        /// <param name="cancellationToken">A cancellation token</param>
+        /// <returns></returns>
+        Task<MeResponseModel> UpdateReservedBalanceAsync(
+            string id,
+            string clientId,
+            string assetId,
+            double amount,
+            CancellationToken cancellationToken = default);
+
+        /// <summary>
         /// Cash In or Out some amount of an asset
         /// </summary>
         /// <param name="id">internal id of transaction, to prevent double sending and further processing</param>

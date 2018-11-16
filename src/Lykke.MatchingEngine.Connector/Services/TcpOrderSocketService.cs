@@ -101,6 +101,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                     case MeNewUpdateBalanceModel m14:
                     case MeMultiLimitOrderModel m15:
                     case MeMultiLimitOrderCancelModel m16:
+                    case MeNewUpdateReservedBalanceModel m17:
                         break;
                     default:
                         throw new ArgumentException(nameof(data), $"{data.GetType().Name} is not mapped. Please check the mapping in the MatchingEngineSerializer class");
