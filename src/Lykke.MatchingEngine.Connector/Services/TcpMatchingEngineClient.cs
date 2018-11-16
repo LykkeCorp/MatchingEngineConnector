@@ -99,6 +99,29 @@ namespace Lykke.MatchingEngine.Connector.Services
             );
         }
 
+        public Task<MeResponseModel> UpdateReservedBalanceAsync(
+            string id,
+            string clientId,
+            string assetId,
+            double amount,
+            CancellationToken cancellationToken = default)
+        {
+            var model = MeNeweUpdateReservedBalanceModel.Create(
+                id,
+                clientId,
+                assetId,
+                amount);
+            
+            return SendData(
+                model,
+                _newTasksManager,
+                x => x.ToDomainModel(),
+                cancellationToken,
+                id,
+                assetId
+            );
+        }
+
         public Task<MeResponseModel> CashInOutAsync(
             string id,
             string clientId,

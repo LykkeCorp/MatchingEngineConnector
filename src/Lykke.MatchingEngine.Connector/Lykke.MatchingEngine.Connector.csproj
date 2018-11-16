@@ -1,24 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
-  
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>Lykke.MatchingEngineConnector</PackageId>
     <Version>1.0.1</Version>
     <Authors>Lykke</Authors>
     <Company>Lykke</Company>
-    <Description></Description>
+    <Description>
+    </Description>
     <Copyright>@2018 - Lykke</Copyright>
     <PackageLicenseUrl>https://github.com/LykkeCity/MatchingEngineConnector/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/LykkeCity/MatchingEngineConnector</PackageProjectUrl>
     <RepositoryUrl>https://github.com/LykkeCity/MatchingEngineConnector.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageIconUrl>https://avatars3.githubusercontent.com/u/14153330?v=3&amp;s=200</PackageIconUrl>
-	<GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
     <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\Debug\netstandard2.0\Lykke.MatchingEngine.Connector.xml</DocumentationFile>
@@ -27,21 +25,17 @@
     <LangVersion>latest</LangVersion>
     <DocumentationFile>bin\Release\netstandard2.0\Lykke.MatchingEngine.Connector.xml</DocumentationFile>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Remove="bin\**" />
     <EmbeddedResource Remove="bin\**" />
     <None Remove="bin\**" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="protobuf-net" Version="2.3.13" />
     <PackageReference Include="Lykke.Common" Version="7.0.3" />
     <PackageReference Include="SourceLink.Create.CommandLine" Version="2.8.3" PrivateAssets="All" />
   </ItemGroup>
-
 </Project>

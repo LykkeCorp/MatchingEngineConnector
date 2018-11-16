@@ -24,6 +24,7 @@
         UpdateBalanceNew = 11,
         MultiLimitOrderCancel = 57,
         MultiLimitOrderResponse = 98,
+        ReservedBalanceUpdate = 120,
         LimitOrderMassCancel = 121
     }
 }
