@@ -106,7 +106,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             double amount,
             CancellationToken cancellationToken = default)
         {
-            var model = MeNeweUpdateReservedBalanceModel.Create(
+            var model = MeNewUpdateReservedBalanceModel.Create(
                 id,
                 clientId,
                 assetId,

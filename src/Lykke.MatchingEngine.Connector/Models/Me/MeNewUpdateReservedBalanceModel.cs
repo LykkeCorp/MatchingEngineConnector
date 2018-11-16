@@ -4,7 +4,7 @@ using ProtoBuf;
 namespace Lykke.MatchingEngine.Connector.Models.Me
 {
     [ProtoContract]
-    public class MeNeweUpdateReservedBalanceModel
+    public class MeNewUpdateReservedBalanceModel
     {
         [ProtoMember(1, IsRequired = true)]
         public string Id { get; set; }
@@ -21,13 +21,13 @@ namespace Lykke.MatchingEngine.Connector.Models.Me
         [ProtoMember(5, IsRequired = true)]
         public double ReservedVolume { get; set; }
 
-        public static MeNeweUpdateReservedBalanceModel Create(
+        public static MeNewUpdateReservedBalanceModel Create(
             string id,
             string clientId,
             string assetId,
             double amount)
         {
-            return new MeNeweUpdateReservedBalanceModel
+            return new MeNewUpdateReservedBalanceModel
             {
                 Id = id,
                 TimeStamp = (long)System.DateTime.UtcNow.ToUnixTime(),
