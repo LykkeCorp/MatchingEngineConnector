@@ -79,7 +79,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             await ReadThread();
         }
 
-        public async Task Disconnect()
+        public async Task Disconnect(Exception exc)
         {
             try
             {
@@ -107,7 +107,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
 
                     if (_tcpService is ISocketNotifier socketNotifier)
                     {
-                        await socketNotifier.Disconnect();
+                        await socketNotifier.Disconnect(exc);
                     }
 
                     (_tcpService as IDisposable)?.Dispose();
@@ -154,7 +154,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
             catch (Exception ex)
             {
-                await Disconnect();
+                await Disconnect(ex);
 
                 _log?.Error(ex, context: new {connectionId = Id});
                 _legacyLog?.Add("SendDataToSocket Error. Id: " + Id + "; Msg: " + ex.Message);
@@ -184,7 +184,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             }
             catch (Exception exception)
             {
-                await Disconnect();
+                await Disconnect(exception);
 
                 _log?.Error(exception, context: new {connectionId = Id});
                 _legacyLog?.Add($"Error ReadData [{Id}]: {exception}");

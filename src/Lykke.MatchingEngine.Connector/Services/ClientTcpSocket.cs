@@ -73,14 +73,12 @@ namespace Lykke.MatchingEngine.Connector.Services
             {
                 try
                 {
-
                     using (var connection = await Connect())
                     {
                         var readTask = Task.Factory.StartNew(connection.StartReadData, TaskCreationOptions.LongRunning).Unwrap();
                         var pingTask = Task.Factory.StartNew(() => SocketPingProcess(connection), TaskCreationOptions.LongRunning).Unwrap();
                         await Task.WhenAny(readTask, pingTask);
                     }
-
                 }
                 catch (SocketException se)
                 {
@@ -144,7 +142,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             if (_logFactory != null)
             {
                 var connection = new TcpConnection(_service, tcpSerializer, tcpClient, SocketStatistic, _logFactory, _id++);
-                
+
                 _log.Debug("Connected", new {connectionId = connection.Id});
 
                 return connection;
@@ -152,7 +150,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             else
             {
                 var connection = new TcpConnection(_service, tcpSerializer, tcpClient, SocketStatistic, _legacyLog, _id++);
-                
+
                 _legacyLog?.Add("Connected. Id=" + connection.Id);
 
                 return connection;
@@ -170,14 +168,15 @@ namespace Lykke.MatchingEngine.Connector.Services
 
                     if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > PingInterval * 2)
                     {
+                        string disconnectMessage = $"There is no receive activity during {PingInterval * 2} seconds. Disconnecting...";
                         _log?.Error(
-                            message: "There is no receive activity for a too long time. Disconnecting...",
+                            message: disconnectMessage,
                             context: new
                             {
                                 pingInterval = PingInterval * 2
                             });
-                        _legacyLog?.Add("Long time [" + PingInterval * 2 + "] no receive activity. Disconnect...");
-                        await connection.Disconnect();
+                        _legacyLog?.Add(disconnectMessage);
+                        await connection.Disconnect(new Exception(disconnectMessage));
                     }
                     else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
                     {
@@ -189,7 +188,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
             catch (Exception exception)
             {
-                await connection.Disconnect();
+                await connection.Disconnect(exception);
 
                 _log?.Error(exception);
                 _legacyLog?.Add("Ping Thread Exception: " + exception.Message);
