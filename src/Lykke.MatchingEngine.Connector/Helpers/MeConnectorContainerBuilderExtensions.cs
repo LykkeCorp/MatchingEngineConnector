@@ -47,6 +47,7 @@ namespace Autofac
         /// </remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisgterMeClient(
             this ContainerBuilder ioc,
             IPEndPoint ipEndPoint)

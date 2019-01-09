@@ -45,6 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         /// <param name="services">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisterMeClient(
             this IServiceCollection services,
             IPEndPoint ipEndPoint)
@@ -70,7 +71,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static void RegisterMeClient(
             this IServiceCollection services,
             IPEndPoint ipEndPoint,
-            bool ignoreErrors = false)
+            bool ignoreErrors)
         {
             services.AddSingleton(s =>
             {
