@@ -47,6 +47,7 @@ namespace Autofac
         /// </remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisgterMeClient(
             this ContainerBuilder ioc,
             IPEndPoint ipEndPoint)
@@ -63,5 +64,31 @@ namespace Autofac
                 .As<TcpMatchingEngineClient>();
         }
 
+        /// <summary>
+        /// Registers <see cref="IMatchingEngineClient"/> in <paramref name="ioc"/>
+        /// </summary>
+        /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
+        /// <param name="ioc">Autofac container builder</param>
+        /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="ignoreErrors">Flag indicating, if unknown response error should not rise exception</param>
+        public static void RegisterMeClient(
+            this ContainerBuilder ioc,
+            IPEndPoint ipEndPoint,
+            bool ignoreErrors = false)
+        {
+            ioc.Register(s =>
+                {
+                    var tcpMeClient = new TcpMatchingEngineClient(
+                        ipEndPoint,
+                        s.Resolve<ILogFactory>(),
+                        ignoreErrors);
+
+                    tcpMeClient.Start();
+
+                    return tcpMeClient;
+                })
+                .As<IMatchingEngineClient>()
+                .As<TcpMatchingEngineClient>();
+        }
     }
 }

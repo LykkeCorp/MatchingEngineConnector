@@ -57,7 +57,10 @@ namespace Lykke.MatchingEngine.Connector.Services
                 });
         }
 
-        public TcpMatchingEngineClient(IPEndPoint ipEndPoint, ILogFactory logFactory)
+        public TcpMatchingEngineClient(
+            IPEndPoint ipEndPoint,
+            ILogFactory logFactory,
+            bool ignoreErrors = false)
         {
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 logFactory,
@@ -70,7 +73,8 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _newTasksManager,
                         _marketOrderTasksManager,
                         _multiLimitOrderTasksManager,
-                        logFactory);
+                        logFactory,
+                        ignoreErrors);
                     return _tcpOrderSocketService;
                 });
         }
