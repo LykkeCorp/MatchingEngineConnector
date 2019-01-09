@@ -135,12 +135,16 @@ namespace Lykke.MatchingEngine.Connector.Services
             return Task.CompletedTask;
         }
 
-        public Task Disconnect()
+        public Task Disconnect(Exception exc)
         {
-            _tasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
-            _newTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
-            _marketOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
-            _multiOrdersTasksManager.SetExceptionsToAll(new Exception("Socket disconnected"));
+            if (exc == null)
+                exc = new Exception("Socket disconnected");
+
+            _tasksManager.SetExceptionsToAll(exc);
+            _newTasksManager.SetExceptionsToAll(exc);
+            _marketOrdersTasksManager.SetExceptionsToAll(exc);
+            _multiOrdersTasksManager.SetExceptionsToAll(exc);
+
             return Task.CompletedTask;
         }
     }

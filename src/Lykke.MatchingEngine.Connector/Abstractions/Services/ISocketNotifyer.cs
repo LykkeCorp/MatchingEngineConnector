@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 
 namespace Lykke.MatchingEngine.Connector.Abstractions.Services
 {
@@ -8,6 +9,6 @@ namespace Lykke.MatchingEngine.Connector.Abstractions.Services
     public interface ISocketNotifier
     {
         Task Connect();
-        Task Disconnect();
+        Task Disconnect(Exception exc);
     }
 }
