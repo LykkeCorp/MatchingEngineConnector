@@ -44,13 +44,15 @@ namespace Lykke.MatchingEngine.Connector.Services
             TasksManager<TheNewResponseModel> newTasksManager,
             TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
             TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
-            ILogFactory logFactory)
+            ILogFactory logFactory,
+            bool ignoreErrors = false)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
             _multiOrdersTasksManager = multiOrdersTasksManager;
             _log = logFactory.CreateLog(this);
+            _ignoreErrors = ignoreErrors;
         }
 
         public void HandleDataFromSocket(object data)
