@@ -34,7 +34,8 @@ namespace Autofac
             var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, socketLog, ignoreErrors);
             ioc.RegisterInstance(tcpMeClient)
                 .As<IMatchingEngineClient>()
-                .As<TcpMatchingEngineClient>();
+                .As<TcpMatchingEngineClient>()
+                .SingleInstance();
 
             tcpMeClient.Start();
         }
@@ -61,7 +62,8 @@ namespace Autofac
                     return tcpMeClient;
                 })
                 .As<IMatchingEngineClient>()
-                .As<TcpMatchingEngineClient>();
+                .As<TcpMatchingEngineClient>()
+                .SingleInstance();
         }
 
         /// <summary>
@@ -88,7 +90,8 @@ namespace Autofac
                     return tcpMeClient;
                 })
                 .As<IMatchingEngineClient>()
-                .As<TcpMatchingEngineClient>();
+                .As<TcpMatchingEngineClient>()
+                .SingleInstance();
         }
     }
 }
