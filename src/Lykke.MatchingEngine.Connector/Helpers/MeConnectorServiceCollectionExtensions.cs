@@ -2,7 +2,6 @@
 using System.Net;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Services;
-using Common;
 using JetBrains.Annotations;
 using Lykke.Common.Log;
 
@@ -15,28 +14,6 @@ namespace Microsoft.Extensions.DependencyInjection
     [PublicAPI]
     public static class MeConnectorServiceCollectionExtensions
     {
-        /// <summary>
-        /// Registers <see cref="IMatchingEngineClient"/> in the <paramref name="services"/>
-        /// </summary>
-        /// <param name="services">Autofac container builder</param>
-        /// <param name="ipEndPoint">ME IP endpoint</param>
-        /// <param name="socketLog">Log</param>
-        [Obsolete("Use RegisterMeClient")]
-        public static void AddMeClient(this IServiceCollection services,
-            IPEndPoint ipEndPoint, ISocketLog socketLog = null)
-        {
-            if (socketLog == null)
-                socketLog = new SocketLogDynamic(i => { },
-                    str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str)
-                );
-
-            var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, socketLog);
-            services.AddSingleton<IMatchingEngineClient>(tcpMeClient);
-            services.AddSingleton<TcpMatchingEngineClient>(tcpMeClient);
-
-            tcpMeClient.Start();
-        }
-
         /// <summary>
         /// Registers <see cref="IMatchingEngineClient"/> in the <paramref name="services"/>
         /// </summary>
