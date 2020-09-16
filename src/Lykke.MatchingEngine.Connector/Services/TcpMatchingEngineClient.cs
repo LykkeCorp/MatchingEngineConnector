@@ -23,6 +23,7 @@ namespace Lykke.MatchingEngine.Connector.Services
     ///<inheritdoc cref="IMatchingEngineClient"/>
     public class TcpMatchingEngineClient : IMatchingEngineClient
     {
+        private readonly bool _enableRetries;
         private readonly TimeSpan _defaultReconnectTimeOut = TimeSpan.FromSeconds(3);
 
         private readonly TasksManager<TheResponseModel> _tasksManager =
@@ -39,6 +40,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
 
+        private long _currentNumber = 1;
         private TcpOrderSocketService _tcpOrderSocketService;
 
         /// <inheritdoc />
@@ -50,13 +52,16 @@ namespace Lykke.MatchingEngine.Connector.Services
         private AsyncRetryPolicy<MeResponseModel> _meResponsePolicy;
         private AsyncRetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
         private AsyncRetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
+        private AsyncRetryPolicy<string> _marketOrderOldResponsePolicy;
 
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public TcpMatchingEngineClient(
             IPEndPoint ipEndPoint,
             ILogFactory logFactory,
+            bool enableRetries,
             bool ignoreErrors = false)
         {
+            _enableRetries = enableRetries;
             CreatePolicies(logFactory.CreateLog(this));
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 logFactory,
@@ -81,7 +86,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             ILogFactory logFactory)
         {
             CreatePolicies(logFactory.CreateLog(this));
-
+            _enableRetries = settings.EnableRetries;
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
                 logFactory,
                 settings,
@@ -370,6 +375,38 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         ///<inheritdoc cref="IMatchingEngineClient"/>
+        public Task<string> HandleMarketOrderAsync(
+            string clientId,
+            string assetPairId,
+            OrderAction orderAction,
+            double volume,
+            bool straight,
+            double? reservedLimitVolume = null,
+            CancellationToken cancellationToken = default)
+        {
+
+            var id = GetNextRequestId();
+            var model = MeMarketOrderObsoleteModel.Create(
+                id,
+                clientId,
+                assetPairId,
+                orderAction,
+                volume,
+                straight,
+                reservedLimitVolume);
+
+            return SendData(
+                model,
+                _tasksManager,
+                x => x.RecordId,
+                _marketOrderOldResponsePolicy,
+                cancellationToken,
+                model.Id.ToString(),
+                $"{orderAction} {assetPairId}"
+            );
+        }
+
+        ///<inheritdoc cref="IMatchingEngineClient"/>
         public Task<MarketOrderResponse> HandleMarketOrderAsync(MarketOrderModel model,
             CancellationToken cancellationToken = default)
         {
@@ -452,7 +489,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
             try
             {
-                if (retryPolicy != null)
+                if (_enableRetries)
                 {
                     var response = await retryPolicy.ExecuteAsync(async () =>
                     {
@@ -468,12 +505,6 @@ namespace Lykke.MatchingEngine.Connector.Services
                         var result = await resultTask;
                         return convert(result);
                     });
-
-                    if (response is MeResponseModel meResponseModel)
-                    {
-                        if (meResponseModel.Status == MeStatusCodes.Duplicate)
-                            meResponseModel.Status = MeStatusCodes.Ok;
-                    }
 
                     return response;
                 }
@@ -510,56 +541,100 @@ namespace Lykke.MatchingEngine.Connector.Services
             _clientTcpSocket.Start();
         }
 
+        private long GetNextRequestId()
+        {
+            return Interlocked.Increment(ref _currentNumber);
+        }
+
         private void CreatePolicies(ILog log)
         {
             _meResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception");
+                    log.Warning("Retry on exception", exception);
                     return true;
                 })
                 .OrResult<MeResponseModel>(r =>
                 {
-                    var retry = r == null || r.Status == MeStatusCodes.Runtime;
+                    if (r == null)
+                    {
+                        log.Warning("Retry on null response from ME");
+                        return true;
+                    }
 
-                    if (retry)
-                        log.Warning("Retry on no response from ME or runtime error");
+                    if (r.Status == MeStatusCodes.Runtime)
+                    {
+                        log.Warning("Retry on runtime error from ME");
+                        return true;
+                    }
 
-                    return retry;
+                    return false;
                 }) //ME not available or runtime error
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
             _marketOrderResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception");
+                    log.Warning("Retry on exception", exception);
                     return true;
                 })
                 .OrResult<MarketOrderResponse>(r =>
                 {
-                    var retry = r == null || r.Status == MeStatusCodes.Runtime;
+                    if (r == null)
+                    {
+                        log.Warning("Retry on null response from ME");
+                        return true;
+                    }
 
-                    if (retry)
-                        log.Warning("Retry on no response from ME or runtime error");
+                    if (r.Status == MeStatusCodes.Runtime)
+                    {
+                        log.Warning("Retry on runtime error from ME");
+                        return true;
+                    }
 
-                    return retry;
+                    return false;
                 }) //ME not available or runtime error
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 
             _multiLimitOrderResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception");
+                    log.Warning("Retry on exception", exception);
                     return true;
                 })
                 .OrResult<MultiLimitOrderResponse>(r =>
                 {
-                    var retry = r == null || r.Status == MeStatusCodes.Runtime;
+                    if (r == null)
+                    {
+                        log.Warning("Retry on null response from ME");
+                        return true;
+                    }
 
-                    if (retry)
-                        log.Warning("Retry on no response from ME or runtime error");
+                    if (r.Status == MeStatusCodes.Runtime)
+                    {
+                        log.Warning("Retry on runtime error from ME");
+                        return true;
+                    }
 
-                    return retry;
+                    return false;
+                }) //ME not available or runtime error
+                .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
+
+            _marketOrderOldResponsePolicy = Policy
+                .Handle<Exception>(exception =>
+                {
+                    log.Warning("Retry on exception", exception);
+                    return true;
+                })
+                .OrResult<string>(r =>
+                {
+                    if (r == null)
+                    {
+                        log.Warning("Retry on null response from ME");
+                        return true;
+                    }
+
+                    return false;
                 }) //ME not available or runtime error
                 .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
         }

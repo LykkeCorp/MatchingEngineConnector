@@ -25,7 +25,7 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
 
             var client =
                 new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()),
-                    8888), EmptyLogFactory.Instance);
+                    8888), EmptyLogFactory.Instance, true);
             client.Start();
             return client;
         }

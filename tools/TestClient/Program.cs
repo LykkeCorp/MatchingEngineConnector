@@ -16,8 +16,8 @@ namespace TestClient
             var client = new TcpMatchingEngineClient(
                 new MeClientSettings
                 {
-                    Endpoint = new IPEndPoint(
-                        IPAddress.Parse(Dns.GetHostAddresses("me.me.svc.cluster.local")[0].ToString()), 8888)
+                    Endpoint = new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses("me.me.svc.cluster.local")[0].ToString()), 8888),
+                    EnableRetries = true
                 }, EmptyLogFactory.Instance);
 
             Thread.Sleep(100);

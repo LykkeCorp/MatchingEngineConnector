@@ -22,14 +22,15 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </remarks>
         /// <param name="services">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisterMeClient(
             this IServiceCollection services,
-            IPEndPoint ipEndPoint)
+            IPEndPoint ipEndPoint, bool enableRetries)
         {
             services.AddSingleton(s =>
             {
-                var client = new TcpMatchingEngineClient(ipEndPoint, s.GetRequiredService<ILogFactory>());
+                var client = new TcpMatchingEngineClient(ipEndPoint, s.GetRequiredService<ILogFactory>(), enableRetries);
 
                 client.Start();
 
@@ -44,10 +45,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
         /// <param name="services">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         /// <param name="ignoreErrors">Flag indicating, if unknown response error should not rise exception</param>
         public static void RegisterMeClient(
             this IServiceCollection services,
             IPEndPoint ipEndPoint,
+            bool enableRetries,
             bool ignoreErrors)
         {
             services.AddSingleton(s =>
@@ -55,6 +58,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var client = new TcpMatchingEngineClient(
                     ipEndPoint,
                     s.GetRequiredService<ILogFactory>(),
+                    enableRetries,
                     ignoreErrors);
 
                 client.Start();

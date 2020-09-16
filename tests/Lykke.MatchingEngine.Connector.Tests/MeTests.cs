@@ -22,7 +22,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
             _log = log;
             var url = "";
 
-            _client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888), EmptyLogFactory.Instance);
+            _client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888), EmptyLogFactory.Instance, true);
             Thread.Sleep(100);
             _client.Start();
             Thread.Sleep(100);

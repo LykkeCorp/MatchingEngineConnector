@@ -23,14 +23,15 @@ namespace Autofac
         /// </remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisgterMeClient(
             this ContainerBuilder ioc,
-            IPEndPoint ipEndPoint)
+            IPEndPoint ipEndPoint, bool enableRetries)
         {
             ioc.Register(s =>
                 {
-                    var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, s.Resolve<ILogFactory>());
+                    var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, s.Resolve<ILogFactory>(), enableRetries);
 
                     tcpMeClient.Start();
 
@@ -47,10 +48,12 @@ namespace Autofac
         /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         /// <param name="ignoreErrors">Flag indicating, if unknown response error should not rise exception</param>
         public static void RegisterMeClient(
             this ContainerBuilder ioc,
             IPEndPoint ipEndPoint,
+            bool enableRetries,
             bool ignoreErrors = false)
         {
             ioc.Register(s =>
@@ -58,6 +61,7 @@ namespace Autofac
                     var tcpMeClient = new TcpMatchingEngineClient(
                         ipEndPoint,
                         s.Resolve<ILogFactory>(),
+                        enableRetries,
                         ignoreErrors);
 
                     tcpMeClient.Start();

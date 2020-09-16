@@ -32,5 +32,10 @@ namespace Lykke.MatchingEngine.Connector.Services
         /// Delay before reconnect. Default 3 sec.
         /// </summary>
         public TimeSpan ReconnectTimeOut { get; set; } = TimeSpan.FromSeconds(3);
+
+        /// <summary>
+        /// Enable retries on ME operations
+        /// </summary>
+        public bool EnableRetries { get; set; }
     }
 }
