@@ -16,7 +16,8 @@ namespace Lykke.MatchingEngine.Connector.Services
         where TTcpSerializer : ITcpSerializer, new()
         where TService : class, ITcpClientService
     {
-        public const int PingInterval = 5;
+        private readonly int _pingInterval = 5;
+        private readonly int _disconnectInterval = 10;
 
         [Obsolete]
         [CanBeNull]
@@ -32,7 +33,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         private int _id;
         private bool _working;
         private TService _service;
-        
+
         public bool Connected => _service != null;
 
         public SocketStatistic SocketStatistic { get; }
@@ -64,6 +65,21 @@ namespace Lykke.MatchingEngine.Connector.Services
             _ipEndPoint = ipEndPoint;
             _reconnectTimeOut = reconnectTimeOut;
 
+            _srvFactory = srvFactory;
+        }
+
+        public ClientTcpSocket(
+            ILogFactory logFactory,
+            MeClientSettings settings,
+            Func<TService> srvFactory)
+        {
+            SocketStatistic = new SocketStatistic();
+            _logFactory = logFactory;
+            _log = logFactory.CreateLog(this);
+            _ipEndPoint = settings.Endpoint;
+            _reconnectTimeOut = (int)settings.ReconnectTimeOut.TotalMilliseconds;
+            _pingInterval = (int)settings.PingInterval.TotalSeconds;
+            _disconnectInterval = (int) settings.DisconnectInterval.TotalSeconds;
             _srvFactory = srvFactory;
         }
 
@@ -166,19 +182,20 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     await Task.Delay(500);
 
-                    if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > PingInterval * 2)
+                    if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > _disconnectInterval)
                     {
-                        string disconnectMessage = $"There is no receive activity during {PingInterval * 2} seconds. Disconnecting...";
-                        _log?.Error(
+                        string disconnectMessage = $"There is no receive activity during {_disconnectInterval} seconds. Disconnecting...";
+                        _log?.Warning(
                             message: disconnectMessage,
                             context: new
                             {
-                                pingInterval = PingInterval * 2
+                                pingInterval = _pingInterval,
+                                disconnectInterval = _disconnectInterval
                             });
                         _legacyLog?.Add(disconnectMessage);
                         await connection.Disconnect(new Exception(disconnectMessage));
                     }
-                    else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > PingInterval)
+                    else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > _pingInterval)
                     {
                         var pingData = _service.GetPingData();
                         await connection.SendDataToSocket(pingData, CancellationToken.None);

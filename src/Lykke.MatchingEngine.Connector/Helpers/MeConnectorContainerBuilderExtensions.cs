@@ -16,31 +16,6 @@ namespace Autofac
     public static class MeConnectorContainerBuilderExtensions
     {
         /// <summary>
-        /// Registers <see cref="IMatchingEngineClient"/> in the <paramref name="ioc"/>
-        /// </summary>
-        /// <param name="ioc">Autofac container builder</param>
-        /// <param name="ipEndPoint">ME IP endpoint</param>
-        /// <param name="socketLog">Log</param>
-        /// <param name="ignoreErrors">Flag indicating, if response errors should be not written to the log</param>
-        [Obsolete("Use RegisgterMeClient to use with new Lykke loging system")]
-        public static void BindMeClient(this ContainerBuilder ioc,
-            IPEndPoint ipEndPoint, ISocketLog socketLog = null, bool ignoreErrors = false)
-        {
-            if (socketLog == null)
-                socketLog = new SocketLogDynamic(i => { },
-                    str => Console.WriteLine(DateTime.UtcNow.ToIsoDateTime() + ": " + str)
-                );
-
-            var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, socketLog, ignoreErrors);
-            ioc.RegisterInstance(tcpMeClient)
-                .As<IMatchingEngineClient>()
-                .As<TcpMatchingEngineClient>()
-                .SingleInstance();
-
-            tcpMeClient.Start();
-        }
-
-        /// <summary>
         /// Registers <see cref="IMatchingEngineClient"/> in <paramref name="ioc"/>
         /// </summary>
         /// <remarks>
@@ -48,14 +23,15 @@ namespace Autofac
         /// </remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         [Obsolete("Use RegisterMeClient overload with ignoreErrors flag")]
         public static void RegisgterMeClient(
             this ContainerBuilder ioc,
-            IPEndPoint ipEndPoint)
+            IPEndPoint ipEndPoint, bool enableRetries)
         {
             ioc.Register(s =>
                 {
-                    var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, s.Resolve<ILogFactory>());
+                    var tcpMeClient = new TcpMatchingEngineClient(ipEndPoint, s.Resolve<ILogFactory>(), enableRetries);
 
                     tcpMeClient.Start();
 
@@ -72,10 +48,12 @@ namespace Autofac
         /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
         /// <param name="ioc">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
+        /// <param name="enableRetries">Enable retries on ME operations or not</param>
         /// <param name="ignoreErrors">Flag indicating, if unknown response error should not rise exception</param>
         public static void RegisterMeClient(
             this ContainerBuilder ioc,
             IPEndPoint ipEndPoint,
+            bool enableRetries,
             bool ignoreErrors = false)
         {
             ioc.Register(s =>
@@ -83,7 +61,33 @@ namespace Autofac
                     var tcpMeClient = new TcpMatchingEngineClient(
                         ipEndPoint,
                         s.Resolve<ILogFactory>(),
+                        enableRetries,
                         ignoreErrors);
+
+                    tcpMeClient.Start();
+
+                    return tcpMeClient;
+                })
+                .As<IMatchingEngineClient>()
+                .As<TcpMatchingEngineClient>()
+                .SingleInstance();
+        }
+
+        /// <summary>
+        /// Registers <see cref="IMatchingEngineClient"/> in <paramref name="ioc"/>
+        /// </summary>
+        /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
+        /// <param name="ioc">Autofac container builder</param>
+        /// <param name="settings">ME connection settings</param>
+        public static void RegisterMeClient(
+            this ContainerBuilder ioc,
+            MeClientSettings settings)
+        {
+            ioc.Register(s =>
+                {
+                    var tcpMeClient = new TcpMatchingEngineClient(
+                        settings,
+                        s.Resolve<ILogFactory>());
 
                     tcpMeClient.Start();
 

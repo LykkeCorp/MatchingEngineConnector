@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net;
+using Lykke.Logs;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Services;
 
@@ -24,7 +25,7 @@ namespace Lykke.MatchingEngine.Connector.Tests.Services
 
             var client =
                 new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()),
-                    8888));
+                    8888), EmptyLogFactory.Instance, true);
             client.Start();
             return client;
         }
