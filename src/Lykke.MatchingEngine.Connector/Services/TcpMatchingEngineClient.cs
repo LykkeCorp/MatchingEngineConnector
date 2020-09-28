@@ -49,10 +49,10 @@ namespace Lykke.MatchingEngine.Connector.Services
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public SocketStatistic SocketStatistic => _clientTcpSocket.SocketStatistic;
 
-        private AsyncRetryPolicy<MeResponseModel> _meResponsePolicy;
-        private AsyncRetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
-        private AsyncRetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
-        private AsyncRetryPolicy<string> _marketOrderOldResponsePolicy;
+        private RetryPolicy<MeResponseModel> _meResponsePolicy;
+        private RetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
+        private RetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
+        private RetryPolicy<string> _marketOrderOldResponsePolicy;
 
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public TcpMatchingEngineClient(
@@ -474,7 +474,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             TModel model,
             TasksManager<TResult> manager,
             Func<TResult, TResponse> convert,
-            AsyncRetryPolicy<TResponse> retryPolicy,
+            RetryPolicy<TResponse> retryPolicy,
             CancellationToken cancellationToken,
             string id,
             string telemetryData,
