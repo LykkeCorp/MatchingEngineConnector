@@ -98,7 +98,8 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _marketOrderTasksManager,
                         _multiLimitOrderTasksManager,
                         logFactory,
-                        settings.IgnoreErrors);
+                        settings.IgnoreErrors,
+                        settings.LogResponse);
                     return _tcpOrderSocketService;
                 });
         }

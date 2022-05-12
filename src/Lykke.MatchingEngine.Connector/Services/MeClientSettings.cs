@@ -37,5 +37,10 @@ namespace Lykke.MatchingEngine.Connector.Services
         /// Enable retries on ME operations
         /// </summary>
         public bool EnableRetries { get; set; }
+
+        /// <summary>
+        /// Should log ME response
+        /// </summary>
+        public bool LogResponse { get; set; } = true;
     }
 }
