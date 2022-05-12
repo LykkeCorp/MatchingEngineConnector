@@ -21,6 +21,8 @@ namespace Lykke.MatchingEngine.Connector.Services
         [CanBeNull]
         private readonly ISocketLog _legacyLog;
         private readonly bool _ignoreErrors;
+        private readonly bool _logResponse;
+
         [CanBeNull]
         private readonly ILog _log;
 
@@ -45,7 +47,8 @@ namespace Lykke.MatchingEngine.Connector.Services
             TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
             TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
             ILogFactory logFactory,
-            bool ignoreErrors = false)
+            bool ignoreErrors = false,
+            bool logResponse = true)
         {
             _tasksManager = tasksManager;
             _newTasksManager = newTasksManager;
@@ -53,6 +56,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _multiOrdersTasksManager = multiOrdersTasksManager;
             _log = logFactory.CreateLog(this);
             _ignoreErrors = ignoreErrors;
+            _logResponse = logResponse;
         }
 
         public void HandleDataFromSocket(object data)
@@ -62,25 +66,29 @@ namespace Lykke.MatchingEngine.Connector.Services
                 switch (data)
                 {
                     case TheResponseModel theResponse:
-                        _log?.Info("Response", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
+                        if (_logResponse)
+                            _log?.Info($"Response: {theResponse.ToJson()}.", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
                         _legacyLog?.Add($"Response ProcessId: {theResponse.ProcessId}");
                         _tasksManager.SetResult(theResponse.ProcessId, theResponse);
                         break;
 
                     case TheNewResponseModel theNewResponse:
-                        _log?.Info("Response", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
+                        if (_logResponse)
+                            _log?.Info($"Response: {theNewResponse.ToJson()}.", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {theNewResponse.Id}");
                         _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
                         break;
 
                     case MarketOrderResponseModel theMarketOrderResponse:
-                        _log?.Info("Response", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
+                        if (_logResponse)
+                            _log?.Info($"Response: {theMarketOrderResponse.ToJson()}.", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {theMarketOrderResponse.Id}");
                         _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
                         break;
 
                     case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
-                        _log?.Info("Response", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
+                        if (_logResponse)
+                            _log?.Info($"Response: {multiLimitOrderResponse.ToJson()}.", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {multiLimitOrderResponse.Id}");
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
