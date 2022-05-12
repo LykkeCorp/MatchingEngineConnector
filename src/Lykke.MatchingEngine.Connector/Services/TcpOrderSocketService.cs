@@ -62,25 +62,25 @@ namespace Lykke.MatchingEngine.Connector.Services
                 switch (data)
                 {
                     case TheResponseModel theResponse:
-                        _log?.Debug("Response", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
+                        _log?.Debug($"Response: {theResponse.ToJson()}.", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
                         _legacyLog?.Add($"Response ProcessId: {theResponse.ProcessId}");
                         _tasksManager.SetResult(theResponse.ProcessId, theResponse);
                         break;
 
                     case TheNewResponseModel theNewResponse:
-                        _log?.Debug("Response", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
+                        _log?.Debug($"Response: {theNewResponse.ToJson()}.", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {theNewResponse.Id}");
                         _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
                         break;
 
                     case MarketOrderResponseModel theMarketOrderResponse:
-                        _log?.Debug("Response", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
+                        _log?.Debug($"Response: {theMarketOrderResponse.ToJson()}.", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {theMarketOrderResponse.Id}");
                         _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
                         break;
 
                     case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
-                        _log?.Debug("Response", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
+                        _log?.Debug($"Response: {multiLimitOrderResponse.ToJson()}.", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
                         _legacyLog?.Add($"Response Id: {multiLimitOrderResponse.Id}");
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
