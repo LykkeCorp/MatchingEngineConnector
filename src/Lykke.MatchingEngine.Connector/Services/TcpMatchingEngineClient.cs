@@ -49,10 +49,10 @@ namespace Lykke.MatchingEngine.Connector.Services
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public SocketStatistic SocketStatistic => _clientTcpSocket.SocketStatistic;
 
-        private RetryPolicy<MeResponseModel> _meResponsePolicy;
-        private RetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
-        private RetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
-        private RetryPolicy<string> _marketOrderOldResponsePolicy;
+        private AsyncRetryPolicy<MeResponseModel> _meResponsePolicy;
+        private AsyncRetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
+        private AsyncRetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
+        private AsyncRetryPolicy<string> _marketOrderOldResponsePolicy;
 
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public TcpMatchingEngineClient(
@@ -246,7 +246,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amountToTransfer;
                         break;
                     case FeeChargingType.SUBTRACT_FROM_AMOUNT:
-                        // default ME behavior - no any amoung change required
+                        // default ME behavior - no any among change required
                         break;
                     default:
                         if (feeModel.Type != FeeType.EXTERNAL_FEE)
@@ -475,7 +475,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             TModel model,
             TasksManager<TResult> manager,
             Func<TResult, TResponse> convert,
-            RetryPolicy<TResponse> retryPolicy,
+            AsyncRetryPolicy<TResponse> retryPolicy,
             CancellationToken cancellationToken,
             string id,
             string telemetryData,
