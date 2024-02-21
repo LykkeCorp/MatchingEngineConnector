@@ -1,17 +1,17 @@
 ﻿using System;
 using System.Net;
 using System.Threading;
-using Lykke.Logs;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.MatchingEngine.Connector.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 
 var client = new TcpMatchingEngineClient(
     new MeClientSettings
     {
         Endpoint = new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses("me.me.svc.cluster.local")[0].ToString()), 8888),
         EnableRetries = true
-    }, EmptyLogFactory.Instance);
+    }, NullLoggerFactory.Instance);
 
 Thread.Sleep(100);
 client.Start();

@@ -7,10 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Lykke.Logs" Version="7.4.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\src\Lykke.MatchingEngine.Connector\Lykke.MatchingEngine.Connector.csproj" />
   </ItemGroup>
 

@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
-using Lykke.Logs;
 using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.MatchingEngine.Connector.Services;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ namespace Lykke.MatchingEngine.Connector.Tests
             _log = log;
             var url = "";
 
-            _client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888), EmptyLogFactory.Instance, true);
+            _client = new TcpMatchingEngineClient(new IPEndPoint(IPAddress.Parse(Dns.GetHostAddresses(url)[0].ToString()), 8888), NullLoggerFactory.Instance, true);
             Thread.Sleep(100);
             _client.Start();
             Thread.Sleep(100);
