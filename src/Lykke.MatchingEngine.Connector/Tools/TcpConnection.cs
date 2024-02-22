@@ -3,6 +3,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Extensions;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Helpers;
 using Microsoft.Extensions.Logging;
@@ -146,6 +147,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
                     var (response, receivedBytes) = await _tcpSerializer.Deserialize(stream);
                     _socketStatistic.LastReceiveTime = DateTime.UtcNow;
                     _socketStatistic.Received += receivedBytes;
+                    _logger.ReceivedData(response, _socketStatistic.LastReceiveTime);
 
                     if (response != null)
                     {

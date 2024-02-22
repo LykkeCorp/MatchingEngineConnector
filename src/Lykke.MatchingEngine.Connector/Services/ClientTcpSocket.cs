@@ -4,6 +4,7 @@ using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Extensions;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
 using Microsoft.Extensions.Logging;
@@ -47,12 +48,13 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         public ClientTcpSocket(
-            ILogger<ClientTcpSocket<TTcpSerializer, TService>> logger,
+            ILoggerFactory loggerFactory,
             MeClientSettings settings,
             Func<TService> srvFactory)
         {
             SocketStatistic = new SocketStatistic();
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<ClientTcpSocket<TTcpSerializer, TService>>();
+            _loggerFactory = loggerFactory;
             _ipEndPoint = settings.Endpoint;
             _reconnectTimeOut = (int)settings.ReconnectTimeOut.TotalMilliseconds;
             _pingInterval = (int)settings.PingInterval.TotalSeconds;
@@ -141,14 +143,13 @@ namespace Lykke.MatchingEngine.Connector.Services
         private async Task SocketPingProcess(TcpConnection connection)
         {
             var lastSendPingTime = DateTime.UtcNow;
-            _logger.LogDebug("Ping");
             
             try
             {
                 while (!connection.Disconnected)
                 {
-                    await Task.Delay(500);
-
+                    await Task.Delay(500); 
+                    
                     if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > _disconnectInterval)
                     {
                         _logger.LogWarning("There is no receive activity during {DisconnectInterval} seconds. Disconnecting...", _disconnectInterval);
@@ -157,7 +158,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                     else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > _pingInterval)
                     {
                         var pingData = _service.GetPingData();
-                        _logger.LogDebug("No ping for {PingInterval} seconds, sending ping data {@PingData}", _pingInterval, pingData);
+                        _logger.SendingPingData(pingData);
                         await connection.SendDataToSocket(pingData, CancellationToken.None);
                         lastSendPingTime = DateTime.UtcNow;
                     }

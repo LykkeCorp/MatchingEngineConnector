@@ -83,7 +83,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             CreatePolicies(loggerFactory.CreateLogger<TcpMatchingEngineClient>());
             _enableRetries = settings.EnableRetries;
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
-                loggerFactory.CreateLogger<ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>>(),
+                loggerFactory,
                 settings,
                 () =>
                 {
