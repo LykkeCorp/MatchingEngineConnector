@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using Common.Log;
-using JetBrains.Annotations;
-using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Models.Me;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
@@ -17,36 +15,16 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly TasksManager<TheNewResponseModel> _newTasksManager;
         private readonly TasksManager<MarketOrderResponseModel> _marketOrdersTasksManager;
         private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiOrdersTasksManager;
-        [Obsolete]
-        [CanBeNull]
-        private readonly ISocketLog _legacyLog;
         private readonly bool _ignoreErrors;
         private readonly bool _logResponse;
-
-        [CanBeNull]
-        private readonly ILog _log;
-
-        [Obsolete]
-        public TcpOrderSocketService(TasksManager<TheResponseModel> tasksManager,
-            TasksManager<TheNewResponseModel> newTasksManager,
-            TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
-            TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
-            ISocketLog logger = null,
-            bool ignoreErrors = false)
-        {
-            _tasksManager = tasksManager;
-            _newTasksManager = newTasksManager;
-            _marketOrdersTasksManager = marketOrdersTasksManager;
-            _multiOrdersTasksManager = multiOrdersTasksManager;
-            _legacyLog = logger;
-            _ignoreErrors = ignoreErrors;
-        }
+        private readonly ILogger<TcpOrderSocketService> _logger;
+        
 
         public TcpOrderSocketService(TasksManager<TheResponseModel> tasksManager,
             TasksManager<TheNewResponseModel> newTasksManager,
             TasksManager<MarketOrderResponseModel> marketOrdersTasksManager,
             TasksManager<MeMultiLimitOrderResponseModel> multiOrdersTasksManager,
-            ILogFactory logFactory,
+            ILogger<TcpOrderSocketService> logger,
             bool ignoreErrors = false,
             bool logResponse = true)
         {
@@ -54,7 +32,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             _newTasksManager = newTasksManager;
             _marketOrdersTasksManager = marketOrdersTasksManager;
             _multiOrdersTasksManager = multiOrdersTasksManager;
-            _log = logFactory.CreateLog(this);
+            _logger = logger;
             _ignoreErrors = ignoreErrors;
             _logResponse = logResponse;
         }
@@ -67,51 +45,51 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     case TheResponseModel theResponse:
                         if (_logResponse)
-                            _log?.Info($"Response: {theResponse.ToJson()}.", new {processId = theResponse.ProcessId, responseType = theResponse.GetType()});
-                        _legacyLog?.Add($"Response ProcessId: {theResponse.ProcessId}");
+                            _logger.LogInformation("Response: {@MeResponse)}", theResponse);
+                        
                         _tasksManager.SetResult(theResponse.ProcessId, theResponse);
                         break;
 
                     case TheNewResponseModel theNewResponse:
                         if (_logResponse)
-                            _log?.Info($"Response: {theNewResponse.ToJson()}.", new {processId = theNewResponse.Id, responseType = theNewResponse.GetType()});
-                        _legacyLog?.Add($"Response Id: {theNewResponse.Id}");
+                            _logger.LogInformation("Response: {@MeResponse)}", theNewResponse);
+                        
                         _newTasksManager.SetResult(theNewResponse.Id, theNewResponse);
                         break;
 
                     case MarketOrderResponseModel theMarketOrderResponse:
                         if (_logResponse)
-                            _log?.Info($"Response: {theMarketOrderResponse.ToJson()}.", new {processId = theMarketOrderResponse.Id, responseType = theMarketOrderResponse.GetType()});
-                        _legacyLog?.Add($"Response Id: {theMarketOrderResponse.Id}");
+                            _logger.LogInformation("Response: {@MeResponse)}", theMarketOrderResponse);
+                        
                         _marketOrdersTasksManager.SetResult(theMarketOrderResponse.Id, theMarketOrderResponse);
                         break;
 
                     case MeMultiLimitOrderResponseModel multiLimitOrderResponse:
                         if (_logResponse)
-                            _log?.Info($"Response: {multiLimitOrderResponse.ToJson()}.", new {processId = multiLimitOrderResponse.Id, responseType = multiLimitOrderResponse.GetType()});
-                        _legacyLog?.Add($"Response Id: {multiLimitOrderResponse.Id}");
+                            _logger.LogInformation("Response: {@MeResponse)}", multiLimitOrderResponse);
+                        
                         _multiOrdersTasksManager.SetResult(multiLimitOrderResponse.Id, multiLimitOrderResponse);
                         break;
 
                     // No handlers for the following messages
-                    case MePingModel m0:
-                    case MeCashInOutModel m1:
-                    case MeLimitOrderModel m2:
-                    case MeMarketOrderObsoleteModel m3:
-                    case MeLimitOrderCancelModel m4:
-                    case MeUpdateBalanceModel m5:
-                    case MeNewTransferModel m6:
-                    case MeNewCashInOutModel m7:
-                    case MeNewSwapModel m8:
-                    case MeUpdateWalletCredsModel m9:
-                    case MeNewLimitOrderModel m10:
-                    case MeNewLimitOrderCancelModel m11:
-                    case MeNewMarketOrderModel m12:
-                    case MeMarketOrderModel m13:
-                    case MeNewUpdateBalanceModel m14:
-                    case MeMultiLimitOrderModel m15:
-                    case MeMultiLimitOrderCancelModel m16:
-                    case MeNewUpdateReservedBalanceModel m17:
+                    case MePingModel:
+                    case MeCashInOutModel:
+                    case MeLimitOrderModel:
+                    case MeMarketOrderObsoleteModel:
+                    case MeLimitOrderCancelModel:
+                    case MeUpdateBalanceModel:
+                    case MeNewTransferModel:
+                    case MeNewCashInOutModel:
+                    case MeNewSwapModel:
+                    case MeUpdateWalletCredsModel:
+                    case MeNewLimitOrderModel:
+                    case MeNewLimitOrderCancelModel:
+                    case MeNewMarketOrderModel:
+                    case MeMarketOrderModel:
+                    case MeNewUpdateBalanceModel:
+                    case MeMultiLimitOrderModel:
+                    case MeMultiLimitOrderCancelModel:
+                    case MeNewUpdateReservedBalanceModel:
                         break;
                     default:
                         throw new ArgumentException(nameof(data), $"{data.GetType().Name} is not mapped. Please check the mapping in the MatchingEngineSerializer class");
@@ -119,17 +97,10 @@ namespace Lykke.MatchingEngine.Connector.Services
             }
             catch (KeyNotFoundException exception)
             {
-                _log?.Error(exception, context: data);
+                _logger?.LogError(exception, "Error processing data {@MeResponse}", data);
 
-                if (_ignoreErrors)
-                {
-                    _legacyLog?.Add($"Response: {data.ToJson()}");
-                    _legacyLog?.Add(exception.ToString());
-                }
-                else
-                {
+                if (!_ignoreErrors)
                     throw;
-                }
             }
         }
 
@@ -147,8 +118,7 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public Task Disconnect(Exception exc)
         {
-            if (exc == null)
-                exc = new Exception("Socket disconnected");
+            exc ??= new Exception("Socket disconnected");
 
             _tasksManager.SetExceptionsToAll(exc);
             _newTasksManager.SetExceptionsToAll(exc);

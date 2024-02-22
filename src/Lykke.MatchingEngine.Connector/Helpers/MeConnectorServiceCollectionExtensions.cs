@@ -3,7 +3,7 @@ using System.Net;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Services;
 using JetBrains.Annotations;
-using Lykke.Common.Log;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -17,9 +17,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers <see cref="IMatchingEngineClient"/> in the <paramref name="services"/>
         /// </summary>
-        /// <remarks>
-        /// <see cref="ILogFactory"/> should be registered in the container.
-        /// </remarks>
         /// <param name="services">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
         /// <param name="enableRetries">Enable retries on ME operations or not</param>
@@ -30,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             services.AddSingleton(s =>
             {
-                var client = new TcpMatchingEngineClient(ipEndPoint, s.GetRequiredService<ILogFactory>(), enableRetries);
+                var client = new TcpMatchingEngineClient(ipEndPoint, s.GetRequiredService<ILoggerFactory>(), enableRetries);
 
                 client.Start();
 
@@ -42,7 +39,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Registers <see cref="IMatchingEngineClient"/> in the <paramref name="services"/>
         /// </summary>
-        /// <remarks><see cref="ILogFactory"/> should be registered in the container.</remarks>
         /// <param name="services">Autofac container builder</param>
         /// <param name="ipEndPoint">ME IP endpoint</param>
         /// <param name="enableRetries">Enable retries on ME operations or not</param>
@@ -57,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var client = new TcpMatchingEngineClient(
                     ipEndPoint,
-                    s.GetRequiredService<ILogFactory>(),
+                    s.GetRequiredService<ILoggerFactory>(),
                     enableRetries,
                     ignoreErrors);
 

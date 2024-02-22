@@ -3,12 +3,11 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
-using Common.Log;
-using JetBrains.Annotations;
-using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
+using Lykke.MatchingEngine.Connector.Extensions;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
+using Microsoft.Extensions.Logging;
 
 namespace Lykke.MatchingEngine.Connector.Services
 {
@@ -19,16 +18,11 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly int _pingInterval = 5;
         private readonly int _disconnectInterval = 10;
 
-        [Obsolete]
-        [CanBeNull]
-        private readonly ISocketLog _legacyLog;
+        private readonly ILoggerFactory _loggerFactory;
         private readonly IPEndPoint _ipEndPoint;
         private readonly int _reconnectTimeOut;
         private readonly Func<TService> _srvFactory;
-        [CanBeNull]
-        private readonly ILog _log;
-        [CanBeNull]
-        private readonly ILogFactory _logFactory;
+        private readonly ILogger<ClientTcpSocket<TTcpSerializer, TService>> _logger;
 
         private int _id;
         private bool _working;
@@ -38,15 +32,15 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         public SocketStatistic SocketStatistic { get; }
 
-        [Obsolete]
         public ClientTcpSocket(
-            ISocketLog log,
+            ILoggerFactory loggerFactory,
             IPEndPoint ipEndPoint,
             int reconnectTimeOut,
             Func<TService> srvFactory)
         {
             SocketStatistic = new SocketStatistic();
-            _legacyLog = log;
+            _logger = loggerFactory.CreateLogger<ClientTcpSocket<TTcpSerializer, TService>>();
+            _loggerFactory = loggerFactory;
             _ipEndPoint = ipEndPoint;
             _reconnectTimeOut = reconnectTimeOut;
 
@@ -54,28 +48,13 @@ namespace Lykke.MatchingEngine.Connector.Services
         }
 
         public ClientTcpSocket(
-            ILogFactory logFactory,
-            IPEndPoint ipEndPoint,
-            int reconnectTimeOut,
-            Func<TService> srvFactory)
-        {
-            SocketStatistic = new SocketStatistic();
-            _logFactory = logFactory;
-            _log = logFactory.CreateLog(this);
-            _ipEndPoint = ipEndPoint;
-            _reconnectTimeOut = reconnectTimeOut;
-
-            _srvFactory = srvFactory;
-        }
-
-        public ClientTcpSocket(
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             MeClientSettings settings,
             Func<TService> srvFactory)
         {
             SocketStatistic = new SocketStatistic();
-            _logFactory = logFactory;
-            _log = logFactory.CreateLog(this);
+            _logger = loggerFactory.CreateLogger<ClientTcpSocket<TTcpSerializer, TService>>();
+            _loggerFactory = loggerFactory;
             _ipEndPoint = settings.Endpoint;
             _reconnectTimeOut = (int)settings.ReconnectTimeOut.TotalMilliseconds;
             _pingInterval = (int)settings.PingInterval.TotalSeconds;
@@ -100,20 +79,17 @@ namespace Lykke.MatchingEngine.Connector.Services
                 {
                     if (se.SocketErrorCode == SocketError.ConnectionRefused)
                     {
-                        _log?.Error(se, "Connection support exception");
-                        _legacyLog?.Add("Connection support exception: " + se.Message);
+                        _logger.LogError(se, "Connection support exception");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _log?.Error(ex, "Connection support fatal exception");
-                    _legacyLog?.Add("Connection support fatal exception:" + ex.Message);
+                    _logger.LogError(ex, "Connection support fatal exception");
                 }
                 finally
                 {
                     _service = default(TService);
-                    _log?.Warning("Connection timeout...");
-                    _legacyLog?.Add("Connection Timeout...");
+                    _logger.LogWarning("Connection timeout...");
                     Thread.Sleep(_reconnectTimeOut);
                 }
             }
@@ -123,6 +99,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             if (_working)
                 throw new Exception("Client socket has already started");
+            
             _working = true;
             SocketThread();
         }
@@ -134,14 +111,14 @@ namespace Lykke.MatchingEngine.Connector.Services
 
         private async Task<TcpConnection> Connect()
         {
-            _log?.Debug("Attempt to connect", new
+            _logger.LogDebug("Attempt to connect {@Address}", new
             {
                 address = _ipEndPoint.Address.ToString(),
                 port = _ipEndPoint.Port
             });
-            _legacyLog?.Add("Attempt To Connect:" + _ipEndPoint.Address + ":" + _ipEndPoint.Port);
 
             var tcpClient = new TcpClient { NoDelay = true };
+            
             try
             {
                 await tcpClient.ConnectAsync(_ipEndPoint.Address, _ipEndPoint.Port);
@@ -151,53 +128,37 @@ namespace Lykke.MatchingEngine.Connector.Services
                 tcpClient.Dispose();
                 throw;
             }
+            
             _service = _srvFactory();
             SocketStatistic.Init();
             var tcpSerializer = new TTcpSerializer();
 
-            if (_logFactory != null)
-            {
-                var connection = new TcpConnection(_service, tcpSerializer, tcpClient, SocketStatistic, _logFactory, _id++);
+            var connection = new TcpConnection(_service, tcpSerializer, tcpClient, SocketStatistic, _loggerFactory.CreateLogger<TcpConnection>(), _id++);
 
-                _log.Debug("Connected", new {connectionId = connection.Id});
+            _logger.LogDebug("Connected {ConnectionId}", connection.Id);
 
-                return connection;
-            }
-            else
-            {
-                var connection = new TcpConnection(_service, tcpSerializer, tcpClient, SocketStatistic, _legacyLog, _id++);
-
-                _legacyLog?.Add("Connected. Id=" + connection.Id);
-
-                return connection;
-            }
+            return connection;
         }
 
         private async Task SocketPingProcess(TcpConnection connection)
         {
             var lastSendPingTime = DateTime.UtcNow;
+            
             try
             {
                 while (!connection.Disconnected)
                 {
-                    await Task.Delay(500);
-
+                    await Task.Delay(500); 
+                    
                     if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > _disconnectInterval)
                     {
-                        string disconnectMessage = $"There is no receive activity during {_disconnectInterval} seconds. Disconnecting...";
-                        _log?.Warning(
-                            message: disconnectMessage,
-                            context: new
-                            {
-                                pingInterval = _pingInterval,
-                                disconnectInterval = _disconnectInterval
-                            });
-                        _legacyLog?.Add(disconnectMessage);
-                        await connection.Disconnect(new Exception(disconnectMessage));
+                        _logger.LogWarning("There is no receive activity during {DisconnectInterval} seconds. Disconnecting...", _disconnectInterval);
+                        await connection.Disconnect(new Exception($"There is no receive activity during {_disconnectInterval} seconds. Disconnecting..."));
                     }
                     else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > _pingInterval)
                     {
                         var pingData = _service.GetPingData();
+                        _logger.SendingPingData(pingData);
                         await connection.SendDataToSocket(pingData, CancellationToken.None);
                         lastSendPingTime = DateTime.UtcNow;
                     }
@@ -206,9 +167,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             catch (Exception exception)
             {
                 await connection.Disconnect(exception);
-
-                _log?.Error(exception);
-                _legacyLog?.Add("Ping Thread Exception: " + exception.Message);
+                _logger.LogError(exception, "Ping Thread Exception");
             }
         }
     }

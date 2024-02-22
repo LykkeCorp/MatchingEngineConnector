@@ -1,0 +1,25 @@
+name: Release nuget package
+
+on:
+  push:
+    tags: "v-*"
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET Core
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 7.0.102
+    - name: Build
+      run: dotnet build --configuration Release /p:AssemblyVersion=${GITHUB_REF#refs/tags/v-}
+    - name: Test
+      run: dotnet test --no-build --configuration Release
+    - name: Create the package
+      run: dotnet pack --configuration Release src/Lykke.MatchingEngine.Connector /p:Version=${GITHUB_REF#refs/tags/v-}
+    - name: Publish the package to GPR
+      run: dotnet nuget push src/Lykke.MatchingEngine.Connector/bin/Release/*.nupkg -s https://f.feedz.io/lykkecorp/xmm/nuget/index.json -k ${{ secrets.FEEDZ_TOKEN }}

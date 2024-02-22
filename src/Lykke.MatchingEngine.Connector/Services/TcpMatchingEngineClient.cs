@@ -6,8 +6,6 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Common;
-using Common.Log;
-using Lykke.Common.Log;
 using Lykke.MatchingEngine.Connector.Abstractions.Services;
 using Lykke.MatchingEngine.Connector.Helpers;
 using Lykke.MatchingEngine.Connector.Models;
@@ -15,6 +13,7 @@ using Lykke.MatchingEngine.Connector.Models.Api;
 using Lykke.MatchingEngine.Connector.Models.Common;
 using Lykke.MatchingEngine.Connector.Models.Me;
 using Lykke.MatchingEngine.Connector.Tools;
+using Microsoft.Extensions.Logging;
 using Polly;
 using Polly.Retry;
 
@@ -26,17 +25,13 @@ namespace Lykke.MatchingEngine.Connector.Services
         private readonly bool _enableRetries;
         private readonly TimeSpan _defaultReconnectTimeOut = TimeSpan.FromSeconds(3);
 
-        private readonly TasksManager<TheResponseModel> _tasksManager =
-            new TasksManager<TheResponseModel>();
+        private readonly TasksManager<TheResponseModel> _tasksManager = new();
 
-        private readonly TasksManager<TheNewResponseModel> _newTasksManager =
-            new TasksManager<TheNewResponseModel>();
+        private readonly TasksManager<TheNewResponseModel> _newTasksManager = new();
 
-        private readonly TasksManager<MarketOrderResponseModel> _marketOrderTasksManager =
-            new TasksManager<MarketOrderResponseModel>();
+        private readonly TasksManager<MarketOrderResponseModel> _marketOrderTasksManager = new();
 
-        private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiLimitOrderTasksManager =
-            new TasksManager<MeMultiLimitOrderResponseModel>();
+        private readonly TasksManager<MeMultiLimitOrderResponseModel> _multiLimitOrderTasksManager = new();
 
         private readonly ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService> _clientTcpSocket;
 
@@ -49,22 +44,22 @@ namespace Lykke.MatchingEngine.Connector.Services
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public SocketStatistic SocketStatistic => _clientTcpSocket.SocketStatistic;
 
-        private RetryPolicy<MeResponseModel> _meResponsePolicy;
-        private RetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
-        private RetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
-        private RetryPolicy<string> _marketOrderOldResponsePolicy;
+        private AsyncRetryPolicy<MeResponseModel> _meResponsePolicy;
+        private AsyncRetryPolicy<MarketOrderResponse> _marketOrderResponsePolicy;
+        private AsyncRetryPolicy<MultiLimitOrderResponse> _multiLimitOrderResponsePolicy;
+        private AsyncRetryPolicy<string> _marketOrderOldResponsePolicy;
 
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public TcpMatchingEngineClient(
             IPEndPoint ipEndPoint,
-            ILogFactory logFactory,
+            ILoggerFactory loggerFactory,
             bool enableRetries,
             bool ignoreErrors = false)
         {
             _enableRetries = enableRetries;
-            CreatePolicies(logFactory.CreateLog(this));
+            CreatePolicies(loggerFactory.CreateLogger<TcpMatchingEngineClient>());
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
-                logFactory,
+                loggerFactory,
                 ipEndPoint,
                 (int) _defaultReconnectTimeOut.TotalMilliseconds,
                 () =>
@@ -74,7 +69,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _newTasksManager,
                         _marketOrderTasksManager,
                         _multiLimitOrderTasksManager,
-                        logFactory,
+                        loggerFactory.CreateLogger<TcpOrderSocketService>(),
                         ignoreErrors);
                     return _tcpOrderSocketService;
                 });
@@ -83,12 +78,12 @@ namespace Lykke.MatchingEngine.Connector.Services
         ///<inheritdoc cref="IMatchingEngineClient"/>
         public TcpMatchingEngineClient(
             MeClientSettings settings,
-            ILogFactory logFactory)
+            ILoggerFactory loggerFactory)
         {
-            CreatePolicies(logFactory.CreateLog(this));
+            CreatePolicies(loggerFactory.CreateLogger<TcpMatchingEngineClient>());
             _enableRetries = settings.EnableRetries;
             _clientTcpSocket = new ClientTcpSocket<MatchingEngineSerializer, TcpOrderSocketService>(
-                logFactory,
+                loggerFactory,
                 settings,
                 () =>
                 {
@@ -97,7 +92,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         _newTasksManager,
                         _marketOrderTasksManager,
                         _multiLimitOrderTasksManager,
-                        logFactory,
+                        loggerFactory.CreateLogger<TcpOrderSocketService>(),
                         settings.IgnoreErrors,
                         settings.LogResponse);
                     return _tcpOrderSocketService;
@@ -246,7 +241,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                         amountToTransfer = fee?.CalculateAmountWithFee(amount, accuracy) ?? amountToTransfer;
                         break;
                     case FeeChargingType.SUBTRACT_FROM_AMOUNT:
-                        // default ME behavior - no any amoung change required
+                        // default ME behavior - no any among change required
                         break;
                     default:
                         if (feeModel.Type != FeeType.EXTERNAL_FEE)
@@ -475,7 +470,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             TModel model,
             TasksManager<TResult> manager,
             Func<TResult, TResponse> convert,
-            RetryPolicy<TResponse> retryPolicy,
+            AsyncRetryPolicy<TResponse> retryPolicy,
             CancellationToken cancellationToken,
             string id,
             string telemetryData,
@@ -547,25 +542,25 @@ namespace Lykke.MatchingEngine.Connector.Services
             return Interlocked.Increment(ref _currentNumber);
         }
 
-        private void CreatePolicies(ILog log)
+        private void CreatePolicies(ILogger<TcpMatchingEngineClient> log)
         {
             _meResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception", exception);
+                    log.LogWarning(exception, "Retry on exception");
                     return true;
                 })
                 .OrResult<MeResponseModel>(r =>
                 {
                     if (r == null)
                     {
-                        log.Warning("Retry on null response from ME");
+                        log.LogWarning("Retry on null response from ME");
                         return true;
                     }
 
                     if (r.Status == MeStatusCodes.Runtime)
                     {
-                        log.Warning("Retry on runtime error from ME");
+                        log.LogWarning("Retry on runtime error from ME");
                         return true;
                     }
 
@@ -576,20 +571,20 @@ namespace Lykke.MatchingEngine.Connector.Services
             _marketOrderResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception", exception);
+                    log.LogWarning(exception, "Retry on exception");
                     return true;
                 })
                 .OrResult<MarketOrderResponse>(r =>
                 {
                     if (r == null)
                     {
-                        log.Warning("Retry on null response from ME");
+                        log.LogWarning("Retry on null response from ME");
                         return true;
                     }
 
                     if (r.Status == MeStatusCodes.Runtime)
                     {
-                        log.Warning("Retry on runtime error from ME");
+                        log.LogWarning("Retry on runtime error from ME");
                         return true;
                     }
 
@@ -600,20 +595,20 @@ namespace Lykke.MatchingEngine.Connector.Services
             _multiLimitOrderResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception", exception);
+                    log.LogWarning(exception , "Retry on exception");
                     return true;
                 })
                 .OrResult<MultiLimitOrderResponse>(r =>
                 {
                     if (r == null)
                     {
-                        log.Warning("Retry on null response from ME");
+                        log.LogWarning("Retry on null response from ME");
                         return true;
                     }
 
                     if (r.Status == MeStatusCodes.Runtime)
                     {
-                        log.Warning("Retry on runtime error from ME");
+                        log.LogWarning("Retry on runtime error from ME");
                         return true;
                     }
 
@@ -624,14 +619,14 @@ namespace Lykke.MatchingEngine.Connector.Services
             _marketOrderOldResponsePolicy = Policy
                 .Handle<Exception>(exception =>
                 {
-                    log.Warning("Retry on exception", exception);
+                    log.LogWarning(exception, "Retry on exception");
                     return true;
                 })
                 .OrResult<string>(r =>
                 {
                     if (r == null)
                     {
-                        log.Warning("Retry on null response from ME");
+                        log.LogWarning("Retry on null response from ME");
                         return true;
                     }
 
