@@ -22,7 +22,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
         internal Action<TcpConnection> DisconnectAction;
 
         private readonly ITcpService _tcpService;
-        
+
         public int Id { get; }
         public bool Disconnected { get; private set; }
 
@@ -60,7 +60,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             {
                 // Вычитаем состояние дисконнект в одном потоке и сменим состояние в Disconnect=true
                 bool disconnected;
-                
+
                 lock (_disconnectLock)
                 {
                     disconnected = Disconnected;
@@ -105,7 +105,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
             {
                 var dataToSocket = _tcpSerializer.Serialize(data);
                 var stream = _socket.GetStream();
-                
+
                 try
                 {
                     await _streamWriteLock.WaitAsync(cancellationToken);
@@ -113,6 +113,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
                     await stream.FlushAsync(cancellationToken);
                     _socketStatistic.Sent += dataToSocket.Length;
                     _socketStatistic.LastSendTime = DateTime.UtcNow;
+                    _logger.SentData(data);
                 }
                 finally
                 {
@@ -130,7 +131,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 await Disconnect(ex);
 
                 _logger.LogError(ex, "SendDataToSocket Error {ConnectionId}", Id);
-                
+
                 TelemetryHelper.SubmitException(ex);
                 return false;
             }
@@ -160,7 +161,7 @@ namespace Lykke.MatchingEngine.Connector.Tools
                 await Disconnect(exception);
 
                 _logger.LogError(exception,"Error ReadData {ConnectionId}", Id);
-                
+
                 TelemetryHelper.SubmitException(exception);
             }
         }

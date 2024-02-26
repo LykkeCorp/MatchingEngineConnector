@@ -99,7 +99,7 @@ namespace Lykke.MatchingEngine.Connector.Services
         {
             if (_working)
                 throw new Exception("Client socket has already started");
-            
+
             _working = true;
             SocketThread();
         }
@@ -118,7 +118,7 @@ namespace Lykke.MatchingEngine.Connector.Services
             });
 
             var tcpClient = new TcpClient { NoDelay = true };
-            
+
             try
             {
                 await tcpClient.ConnectAsync(_ipEndPoint.Address, _ipEndPoint.Port);
@@ -128,7 +128,7 @@ namespace Lykke.MatchingEngine.Connector.Services
                 tcpClient.Dispose();
                 throw;
             }
-            
+
             _service = _srvFactory();
             SocketStatistic.Init();
             var tcpSerializer = new TTcpSerializer();
@@ -143,13 +143,13 @@ namespace Lykke.MatchingEngine.Connector.Services
         private async Task SocketPingProcess(TcpConnection connection)
         {
             var lastSendPingTime = DateTime.UtcNow;
-            
+
             try
             {
                 while (!connection.Disconnected)
                 {
-                    await Task.Delay(500); 
-                    
+                    await Task.Delay(500);
+
                     if ((DateTime.UtcNow - SocketStatistic.LastReceiveTime).TotalSeconds > _disconnectInterval)
                     {
                         _logger.LogWarning("There is no receive activity during {DisconnectInterval} seconds. Disconnecting...", _disconnectInterval);
@@ -158,7 +158,6 @@ namespace Lykke.MatchingEngine.Connector.Services
                     else if ((DateTime.UtcNow - lastSendPingTime).TotalSeconds > _pingInterval)
                     {
                         var pingData = _service.GetPingData();
-                        _logger.SendingPingData(pingData);
                         await connection.SendDataToSocket(pingData, CancellationToken.None);
                         lastSendPingTime = DateTime.UtcNow;
                     }
